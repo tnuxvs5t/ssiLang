@@ -1,4 +1,4 @@
-# ssiLang 完全教程
+# ssiLang 完全教程 (Not Slash but also .sl)
 
 > 面向精通 C++ 的程序员。读完本文，你可以用 ssiLang 写算法题、小工具和进程间通信程序。
 

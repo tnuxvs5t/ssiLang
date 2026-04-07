@@ -1,0 +1,2155 @@
+<!DOCTYPE html><html><head>
+      <title>tutorial</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///c:\Users\ssilZ\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.8.22\crossnote\dependencies\katex\katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script>
+    </head>
+    <body for="html-export">
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="ssilang-完全教程">ssiLang 完全教程 </h1>
+<blockquote>
+<p>面向精通 C++ 的程序员。读完本文，你可以用 ssiLang 写算法题、小工具和进程间通信程序。</p>
+</blockquote>
+<hr>
+<h2 id="0-三分钟速览">0. 三分钟速览 </h2>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 变量绑定（无需声明类型、无需 let/var）
+name = "ssiLang"
+version = 2.2
+
+# 函数
+fn gcd(a, b) {
+    while b != 0 {
+        t = a % b
+        a = b
+        b = t
+    }
+    return a
+}
+
+# Lambda
+double = x -&gt; x * 2
+ping = () -&gt; "pong"
+
+# 容器
+arr = [1, 2, 3, 4, 5]
+m = {name: "Alice", age: 30}
+
+# 管道式调用
+result = arr |&gt; filter(x -&gt; x &gt; 2) |&gt; map(x -&gt; x * 10)
+print(result)   # [30, 40, 50]
+
+# 多文件
+math = import("lib/math")
+print(math.add(2, 3))   # 5
+</code></pre><p>如果这段代码你已经大致能读懂，下面的内容会帮你把每个细节搞清楚。</p>
+<hr>
+<h2 id="1-运行方式">1. 运行方式 </h2>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># 运行脚本文件（扩展名 .sl）</span>
+./sl test.sl
+
+<span class="token comment"># 交互式 REPL</span>
+./sl
+sl<span class="token operator">&gt;</span> print<span class="token punctuation">(</span><span class="token string">"hello"</span><span class="token punctuation">)</span>
+hello
+</code></pre><p>源文件必须是 UTF-8 编码。当前实现同时接受带 BOM 和不带 BOM 的 UTF-8 文件。</p>
+<p>如果脚本里调用 <code>import("...")</code>，路径会相对“当前脚本文件所在目录”解析，而不是相对启动 <code>sl.exe</code> 时的工作目录解析。</p>
+<hr>
+<h2 id="2-基础语法">2. 基础语法 </h2>
+<h3 id="21-注释">2.1 注释 </h3>
+<p>只有单行注释，用 <code>#</code>：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 这是注释
+x = 42  # 行尾注释也可以
+</code></pre><h3 id="22-换行即语句结束">2.2 换行即语句结束 </h3>
+<p>ssiLang <strong>不需要分号</strong>。换行默认终止语句。</p>
+<p>例外：在 <code>()</code>、<code>[]</code>、<code>{}</code> 内部可以自由换行。</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 这是两条语句
+x = 1
+y = 2
+
+# 这是一条语句（在 [] 内部换行）
+arr = [
+    1, 2, 3,
+    4, 5, 6
+]
+</code></pre><h3 id="23-变量绑定">2.3 变量绑定 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>x = 42
+name = "Alice"
+ok = true
+</code></pre><p><strong>没有 <code>let</code>、<code>var</code>、<code>const</code> 关键字。</strong> <code>=</code> 就是绑定。</p>
+<p>语义规则：</p>
+<ul>
+<li>当前作用域中 <code>x</code> 不存在 → 创建新绑定</li>
+<li>当前作用域中 <code>x</code> 已存在 → 更新（rebind）</li>
+<li>不会修改外层作用域的同名变量（内层会遮蔽外层）</li>
+</ul>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>x = 1
+if true {
+    x = 2       # 这里创建了内层的 x，外层的 x 不变
+    print(x)    # 2
+}
+print(x)        # 1
+</code></pre><blockquote>
+<p><strong>C++ 对比：</strong> 类似 Python 的作用域规则，但不需要 <code>global</code> 关键字。如果你需要修改外层的值，用 <code>&amp;ref</code>（后面会讲）或者通过容器间接修改。</p>
+</blockquote>
+<hr>
+<h2 id="3-数据类型">3. 数据类型 </h2>
+<p>ssiLang 是纯动态类型语言。所有值在运行时携带类型标签。</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>字面量示例</th>
+<th><code>type()</code> 返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>整数/浮点数</td>
+<td><code>42</code>, <code>3.14</code>, <code>-7</code></td>
+<td><code>"number"</code></td>
+</tr>
+<tr>
+<td>字符串</td>
+<td><code>"hello"</code></td>
+<td><code>"string"</code></td>
+</tr>
+<tr>
+<td>布尔</td>
+<td><code>true</code>, <code>false</code></td>
+<td><code>"bool"</code></td>
+</tr>
+<tr>
+<td>空值</td>
+<td><code>null</code></td>
+<td><code>"null"</code></td>
+</tr>
+<tr>
+<td>列表</td>
+<td><code>[1, 2, 3]</code></td>
+<td><code>"list"</code></td>
+</tr>
+<tr>
+<td>映射</td>
+<td><code>{a: 1, b: 2}</code></td>
+<td><code>"map"</code></td>
+</tr>
+<tr>
+<td>函数</td>
+<td><code>fn f(x) =&gt; x</code>, <code>x -&gt; x</code>, <code>() -&gt; 42</code></td>
+<td><code>"function"</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>注意：</strong> 数值类型底层统一为 <code>double</code>（和 JavaScript 类似）。没有独立的 int 类型。<code>int()</code> 只是截断转换函数。</p>
+</blockquote>
+<h3 id="31-字符串">3.1 字符串 </h3>
+<p>双引号括起，支持 <code>+</code> 拼接：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>s = "hello" + " " + "world"
+print(s)        # hello world
+print(len(s))   # 11
+print(s[0])     # h
+print(s[4])     # o
+</code></pre><p>字符串的常用方法：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>"a,b,c".split(",")            # ["a", "b", "c"]
+"  hello  ".trim()             # "hello"
+"hello".chars()                # ["h", "e", "l", "l", "o"]
+"hello".starts_with("he")     # true
+"hello".ends_with("lo")       # true
+"hello".contains("ell")       # true
+"hello world".replace("world", "ssiLang")  # "hello ssiLang"
+</code></pre><h3 id="32-列表list">3.2 列表（List） </h3>
+<p>ssiLang 的列表就是 C++ 的 <code>std::vector</code>，动态数组：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>arr = [1, 2, 3, 4, 5]
+print(arr[0])       # 1（0-based 索引）
+print(len(arr))     # 5
+
+arr.push(6)         # 末尾追加，修改原列表
+print(arr.pop())    # 6，移除并返回末尾元素
+</code></pre><p><strong>列表方法一览：</strong></p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>arr = [1, 2, 3, 4, 5]
+
+# 切片（不修改原列表）
+arr.slice(1, 3)                    # [2, 3]
+
+# 函数式三件套
+arr.map(x -&gt; x * 2)               # [2, 4, 6, 8, 10]
+arr.filter(x -&gt; x % 2 == 0)       # [2, 4]
+arr.reduce((acc, x) -&gt; acc + x, 0) # 15
+
+# 查找
+arr.find(x -&gt; x &gt; 3)              # 4
+arr.contains(3)                    # true
+
+# 转换
+arr.join("-")                      # "1-2-3-4-5"
+arr.reverse()                      # [5, 4, 3, 2, 1]（新列表）
+</code></pre><blockquote>
+<p><strong>C++ 对比：</strong> <code>push</code>/<code>pop</code> 对应 <code>push_back</code>/<code>pop_back</code>。<code>map</code>/<code>filter</code>/<code>reduce</code> 对应 <code>std::transform</code>/<code>std::copy_if</code>/<code>std::accumulate</code>，但写法极其简洁。</p>
+</blockquote>
+<h3 id="33-映射map">3.3 映射（Map） </h3>
+<p>键值对容器，键只能是字符串：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>m = {name: "Alice", age: 30, active: true}
+
+# 读取——两种写法等价
+print(m.name)       # Alice
+print(m["age"])     # 30
+
+# 写入
+m.city = "NYC"
+m["score"] = 95
+
+# 方法
+m.keys()            # ["name", "age", "active", "city", "score"]
+m.values()          # 对应的值列表
+m.has("name")       # true
+m.remove("age")     # 移除并返回 30
+</code></pre><blockquote>
+<p><strong>C++ 对比：</strong> 类似 <code>std::unordered_map&lt;std::string, Value&gt;</code>，但加上了 JavaScript 风格的点号访问。</p>
+</blockquote>
+<h3 id="34-类型转换">3.4 类型转换 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>int("123")     # 123
+int(3.7)       # 3（截断）
+float("3.14")  # 3.14
+str(42)        # "42"
+type(42)       # "number"
+</code></pre><hr>
+<h2 id="4-运算符">4. 运算符 </h2>
+<h3 id="41-算术">4.1 算术 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>1 + 2       # 3
+10 - 3      # 7
+4 * 5       # 20
+15 / 4      # 3.75（浮点除法，不是整除！）
+17 % 5      # 2
+-7          # 一元取负
+</code></pre><blockquote>
+<p><strong>C++ 对比：</strong> <code>/</code> 始终是浮点除法。要整除，用 <code>int(a / b)</code>。</p>
+</blockquote>
+<h3 id="42-比较与逻辑">4.2 比较与逻辑 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 比较
+1 &lt; 2       # true
+3 &gt;= 3      # true
+1 == 1      # true
+1 != 2      # true
+
+# 逻辑（关键字，不是符号）
+true and false   # false
+true or false    # true
+not true         # false
+</code></pre><p><code>and</code>/<code>or</code> 短路求值，和 C++ 的 <code>&amp;&amp;</code>/<code>||</code> 行为一致。</p>
+<h3 id="43-优先级表从高到低">4.3 优先级表（从高到低） </h3>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>运算符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>.</code> <code>?.</code> <code>[]</code> <code>?[]</code> <code>()</code></td>
+<td>成员/索引/调用</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>@@</code> <code>not</code> <code>-</code> <code>%mode</code> <code>&amp;kind</code></td>
+<td>一元前缀</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>*</code> <code>/</code> <code>%</code></td>
+<td>乘除取模</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>+</code> <code>-</code></td>
+<td>加减</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></td>
+<td>比较</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>==</code> <code>!=</code></td>
+<td>相等</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>and</code></td>
+<td>逻辑与</td>
+</tr>
+<tr>
+<td>8</td>
+<td><code>or</code></td>
+<td>逻辑或</td>
+</tr>
+<tr>
+<td>9</td>
+<td><code>::</code></td>
+<td>Flow 运算符</td>
+</tr>
+<tr>
+<td>10</td>
+<td><code>|&gt;</code></td>
+<td>Pipe 运算符</td>
+</tr>
+<tr>
+<td>11</td>
+<td><code>=&gt; ||</code></td>
+<td>Split 表达式（最低）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5-控制流">5. 控制流 </h2>
+<h3 id="51-if--else">5.1 if / else </h3>
+<p>两种写法：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 块语法（推荐在多行时使用）
+if x &gt; 5 {
+    print("big")
+} else {
+    print("small")
+}
+
+# 箭头语法（适合单行）
+if x &gt; 0 =&gt; print("positive")
+</code></pre><blockquote>
+<p><strong>注意：</strong> 条件不需要括号，但 <code>{</code> 必须和 <code>if</code> 在同一行（换行即语句结束）。</p>
+</blockquote>
+<h3 id="52-while-循环">5.2 while 循环 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>i = 0
+while i &lt; 10 {
+    print(i)
+    i = i + 1
+}
+</code></pre><blockquote>
+<p><strong>没有 <code>i++</code>。</strong> 写 <code>i = i + 1</code>。</p>
+</blockquote>
+<h3 id="53-for-in-循环">5.3 for-in 循环 </h3>
+<p>ssiLang 只有 <code>for-in</code>，没有 C 风格的 <code>for(;;)</code>：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 遍历列表
+for x in [10, 20, 30] {
+    print(x)
+}
+
+# 遍历 range
+for i in range(5) {
+    print(i)    # 0, 1, 2, 3, 4
+}
+
+for i in range(2, 7) {
+    print(i)    # 2, 3, 4, 5, 6
+}
+
+for i in range(0, 10, 2) {
+    print(i)    # 0, 2, 4, 6, 8
+}
+
+for i in range(5, 0, -1) {
+    print(i)    # 5, 4, 3, 2, 1
+}
+</code></pre><h3 id="54-break--continue">5.4 break / continue </h3>
+<p>和 C++ 行为完全一致：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>for x in range(10) {
+    if x == 5 =&gt; break       # 跳出循环
+    if x % 2 == 0 =&gt; continue # 跳过偶数
+    print(x)                  # 1, 3
+}
+</code></pre><hr>
+<h2 id="6-函数">6. 函数 </h2>
+<h3 id="61-命名函数">6.1 命名函数 </h3>
+<p>两种写法：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 块语法
+fn gcd(a, b) {
+    while b != 0 {
+        t = a % b
+        a = b
+        b = t
+    }
+    return a
+}
+
+# 箭头语法（函数体只有一个表达式时）
+fn add(a, b) =&gt; a + b
+
+# 调用
+print(gcd(48, 18))   # 6
+print(add(3, 4))     # 7
+</code></pre><p><strong>必须用括号调用。</strong> <code>f x</code> 是非法的，必须写 <code>f(x)</code>。</p>
+<h3 id="62-lambda">6.2 Lambda </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 零参数
+ping = () -&gt; "pong"
+print(ping())         # pong
+
+# 单参数
+double = x -&gt; x * 2
+print(double(5))     # 10
+
+# 多参数
+mul = (a, b) -&gt; a * b
+print(mul(6, 7))     # 42
+</code></pre><p>Lambda 只有箭头语法，body 是单个表达式。支持三种参数形态：</p>
+<ul>
+<li><code>() -&gt; expr</code>：零参数</li>
+<li><code>x -&gt; expr</code>：单参数</li>
+<li><code>(a, b, c) -&gt; expr</code>：多参数</li>
+</ul>
+<p>需要多行逻辑时用命名函数。</p>
+<h3 id="63-函数是一等公民">6.3 函数是一等公民 </h3>
+<p>函数可以作为参数传递、作为返回值、存到列表和映射中：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 高阶函数
+fn apply(f, x) =&gt; f(x)
+print(apply(x -&gt; x * x, 9))   # 81
+
+# 返回函数（闭包）
+fn adder(a) {
+    fn inner(b) {
+        return a + b
+    }
+    return inner
+}
+add5 = adder(5)
+print(add5(3))     # 8
+print(add5(10))    # 15
+
+# 函数组合
+fn compose(f, g) {
+    fn composed(x) {
+        return g(f(x))
+    }
+    return composed
+}
+inc_then_double = compose(x -&gt; x + 1, x -&gt; x * 2)
+print(inc_then_double(3))   # 8
+</code></pre><h3 id="64-闭包">6.4 闭包 </h3>
+<p>ssiLang 的闭包通过词法作用域捕获外层变量。但注意：<strong>闭包捕获的是变量名的绑定，不是值的拷贝。</strong> 如果你需要通过闭包修改外层状态，常见做法是把状态放在列表里：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn counter_factory(start) {
+    state = [start]          # 用列表包装，这样闭包可以修改
+    fn inc(n) {
+        state[0] = state[0] + n
+        return state[0]
+    }
+    fn get(dummy) {
+        return state[0]
+    }
+    return {inc: inc, get: get}
+}
+
+c = counter_factory(0)
+c.inc(1)
+c.inc(5)
+print(c.get(0))   # 6
+</code></pre><blockquote>
+<p><strong>为什么用 <code>state = [start]</code> 而不是 <code>state = start</code>？</strong> 因为 <code>state = state + n</code> 在内层函数中会创建新的局部绑定而不是修改外层。用列表后 <code>state[0] = ...</code> 是对现有容器的元素赋值，不创建新绑定。这和 Python 的闭包限制类似。</p>
+</blockquote>
+<h3 id="65-循环中捕获变量">6.5 循环中捕获变量 </h3>
+<p>和 JavaScript 的经典坑一样，循环变量需要显式捕获：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>makers = []
+for i in range(5) {
+    fn make(captured_i) {
+        return x -&gt; x + captured_i
+    }
+    makers.push(make(i))   # 通过参数传递来"捕获"当前值
+}
+
+for f in makers {
+    print(f(100))   # 100, 101, 102, 103, 104
+}
+</code></pre><h3 id="66-多文件与模块">6.6 多文件与模块 </h3>
+<p>ssiLang 现在支持通过内建函数 <code>import(path)</code> 进行多文件开发。</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># app.sl
+math = import("lib/math")
+print(math.add(2, 3))
+print(math.tagged_sum(2, 5))
+</code></pre><pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># lib/math.sl
+text = import("helpers/text.sl")
+
+pi = 3.14
+
+fn add(a, b) =&gt; a + b
+fn tagged_sum(a, b) =&gt; text.wrap(str(add(a, b)))
+
+_hidden = "private"
+</code></pre><pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># lib/helpers/text.sl
+fn wrap(s) =&gt; "&lt;" + s + "&gt;"
+</code></pre><p><code>import(path)</code> 的行为规则：</p>
+<ul>
+<li>返回一个 <code>map</code>，内容是目标文件的顶层导出</li>
+<li>路径相对当前文件所在目录解析</li>
+<li>省略扩展名时会自动尝试补 <code>.sl</code></li>
+<li>同一个模块只执行一次，后续导入命中缓存</li>
+<li>顶层名字以 <code>_</code> 开头时不会导出</li>
+<li>循环导入会报错</li>
+</ul>
+<p>因此推荐的项目结构是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>project/
+  app.sl
+  lib/
+    math.sl
+    helpers/
+      text.sl
+</code></pre><p>当前版本还没有 <code>export</code> / <code>from ... import ...</code> 语法，所以模块边界约定主要依赖“顶层名字 + <code>_</code> 私有前缀”。</p>
+<hr>
+<h2 id="7-特色表达式">7. 特色表达式 </h2>
+<p>这是 ssiLang 和多数语言差别最大的地方。</p>
+<h3 id="71-split-表达式-cond--a--b">7.1 Split 表达式 <code>cond =&gt; a || b</code> </h3>
+<p>三元运算符，但不是 <code>?:</code> 而是 <code>=&gt; ||</code>：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>x = true =&gt; "yes" || "no"
+print(x)   # yes
+
+y = false =&gt; "yes" || "no"
+print(y)   # no
+</code></pre><table>
+<thead>
+<tr>
+<th>C++</th>
+<th>ssiLang</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cond ? a : b</code></td>
+<td><code>cond =&gt; a || b</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>右结合，可以链式使用：</strong></p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn classify(score) {
+    return score &gt;= 90 =&gt; "A" ||
+           score &gt;= 80 =&gt; "B" ||
+           score &gt;= 70 =&gt; "C" ||
+           score &gt;= 60 =&gt; "D" || "F"
+}
+print(classify(85))   # B
+</code></pre><p>在有歧义的位置（如函数参数、lambda body 中），需要加括号：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>x = (ok =&gt; a || b)
+result = f((flag =&gt; x || y))
+</code></pre><h3 id="72-safe-access--和-">7.2 Safe Access <code>?.</code> 和 <code>?[]</code> </h3>
+<p>当左侧为 <code>null</code> 时短路返回 <code>null</code>，不报错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>m = {a: {b: 42}}
+print(m?.a?.b)      # 42
+print(m?.x?.y)      # null（不会报错）
+
+arr = [1, 2, 3]
+print(arr?[0])      # 1
+
+n = null
+print(n?.foo)       # null
+print(n?[0])        # null
+</code></pre><blockquote>
+<p><strong>C++ 对比：</strong> 类似 C++ 提案中的 <code>std::optional</code> 链式操作，或 Kotlin/Swift 的 <code>?.</code>。</p>
+</blockquote>
+<p>在算法竞赛中，这对处理可能为空的 map 查询特别有用：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn freq(arr) {
+    m = {}
+    for x in arr {
+        c = m?[x]            # 不存在时返回 null 而不是报错
+        if c == null {
+            m[x] = 1
+        } else {
+            m[x] = c + 1
+        }
+    }
+    return m
+}
+</code></pre><h3 id="73-flow-运算符-">7.3 Flow 运算符 <code>::</code> </h3>
+<p><code>a::f</code> 等价于 <code>f(a)</code>，<code>a::f(b)</code> 等价于 <code>f(a, b)</code>：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn normalize(x) =&gt; x * 10
+fn encode(x) =&gt; x + 1
+
+# 这三种写法等价
+print(encode(normalize(5)))  # 51
+print(5::normalize::encode)  # 51
+
+result = 5::normalize::encode
+</code></pre><p>适合表达"数据流经一系列变换"的场景。</p>
+<h3 id="74-pipe-运算符-">7.4 Pipe 运算符 <code>|&gt;</code> </h3>
+<p>和 <code>::</code> 语义相同（<code>a |&gt; f</code> = <code>f(a)</code>），但优先级更低，适合长链：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>result = [1, 2, 3, 4, 5]
+    |&gt; filter(x -&gt; x &gt; 2)
+    |&gt; map(x -&gt; x * 10)
+    |&gt; join(", ")
+print(result)   # "30, 40, 50"
+</code></pre><blockquote>
+<p><strong><code>::</code> vs <code>|&gt;</code>：</strong> 功能相同，<code>::</code> 更紧凑适合短链，<code>|&gt;</code> 更适合多步数据处理管道。</p>
+</blockquote>
+<h3 id="75-probe-">7.5 Probe <code>@@</code> </h3>
+<p>调试用的一元前缀运算符，打印表达式值并返回它：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>x = @@42           # 打印调试信息，x 仍然是 42
+@@"checkpoint"     # 快速打印检查点
+</code></pre><hr>
+<h2 id="8-内建函数速查">8. 内建函数速查 </h2>
+<h3 id="全局函数">全局函数 </h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>print(v...)</code></td>
+<td>输出到标准输出，末尾换行</td>
+<td><code>print("hi", 42)</code></td>
+</tr>
+<tr>
+<td><code>input()</code></td>
+<td>从 stdin 读一行</td>
+<td><code>s = input()</code></td>
+</tr>
+<tr>
+<td><code>len(v)</code></td>
+<td>list/string/map 的长度</td>
+<td><code>len([1,2,3])</code> → 3</td>
+</tr>
+<tr>
+<td><code>type(v)</code></td>
+<td>返回类型名字符串</td>
+<td><code>type(42)</code> → <code>"number"</code></td>
+</tr>
+<tr>
+<td><code>int(v)</code></td>
+<td>转整数</td>
+<td><code>int("123")</code> → 123</td>
+</tr>
+<tr>
+<td><code>float(v)</code></td>
+<td>转浮点数</td>
+<td><code>float("3.14")</code> → 3.14</td>
+</tr>
+<tr>
+<td><code>str(v)</code></td>
+<td>转字符串</td>
+<td><code>str(42)</code> → <code>"42"</code></td>
+</tr>
+<tr>
+<td><code>range(...)</code></td>
+<td>生成整数列表</td>
+<td><code>range(5)</code> → [0,1,2,3,4]</td>
+</tr>
+<tr>
+<td><code>abs(n)</code></td>
+<td>绝对值</td>
+<td><code>abs(-5)</code> → 5</td>
+</tr>
+<tr>
+<td><code>min(a, b)</code></td>
+<td>较小值</td>
+<td><code>min(3, 7)</code> → 3</td>
+</tr>
+<tr>
+<td><code>max(a, b)</code></td>
+<td>较大值</td>
+<td><code>max(3, 7)</code> → 7</td>
+</tr>
+<tr>
+<td><code>sort(list)</code></td>
+<td>升序排序（返回新列表）</td>
+<td><code>sort([3,1,2])</code> → [1,2,3]</td>
+</tr>
+<tr>
+<td><code>error(msg)</code></td>
+<td>触发运行时错误</td>
+<td><code>error("bad input")</code></td>
+</tr>
+<tr>
+<td><code>import(path)</code></td>
+<td>加载模块，返回导出 map</td>
+<td><code>import("lib/math")</code></td>
+</tr>
+<tr>
+<td><code>pcall(fn)</code></td>
+<td>保护调用，捕获错误</td>
+<td><code>pcall(my_fn)</code> → <code>{ok: true, value: 42}</code></td>
+</tr>
+<tr>
+<td><code>tcp_listen(addr)</code></td>
+<td>创建 TCP 服务器</td>
+<td><code>tcp_listen("0.0.0.0:9000")</code></td>
+</tr>
+<tr>
+<td><code>json_encode(v)</code></td>
+<td>值转 JSON 字符串</td>
+<td><code>json_encode({a: 1})</code> → <code>'{"a":1}'</code></td>
+</tr>
+<tr>
+<td><code>json_parse(s)</code></td>
+<td>JSON 字符串转值</td>
+<td><code>json_parse("[1,2]")</code> → <code>[1, 2]</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-引用系统-ref">9. 引用系统 <code>&amp;ref</code> </h2>
+<p>ssiLang 的 <code>&amp;ref</code> 类似 C++ 的引用/指针，但是安全的运行时抽象：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 引用列表元素
+arr = [10, 20, 30]
+r = &amp;ref arr[1]
+print(r.deref())     # 20（读取）
+r.set(99)            # 写入
+print(arr)           # [10, 99, 30]
+
+# 引用变量
+x = 42
+rv = &amp;ref x
+print(rv.deref())    # 42
+rv.set(100)
+print(x)             # 100
+
+# 引用 map 成员
+m = {a: 1, b: 2}
+mr = &amp;ref m.a
+mr.set(999)
+print(m)             # {a: 999, b: 2}
+</code></pre><p>引用只有两个方法：<code>deref()</code> 读取，<code>set(v)</code> 写入。</p>
+<p><strong>批量操作示例：</strong></p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>arr = [0, 0, 0, 0, 0]
+refs = []
+for i in range(5) {
+    refs.push(&amp;ref arr[i])
+}
+for i in range(5) {
+    refs[i].set(i * i)
+}
+print(arr)   # [0, 1, 4, 9, 16]
+</code></pre><hr>
+<h2 id="10-derive-系统-">10. Derive 系统 <code>%</code> </h2>
+<p><code>%</code> 前缀用于从现有值派生出新形态：</p>
+<table>
+<thead>
+<tr>
+<th>运算</th>
+<th>语义</th>
+<th>C++ 近似</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>%copy x</code></td>
+<td>浅拷贝</td>
+<td>顶层容器新建，内部元素共享</td>
+</tr>
+<tr>
+<td><code>%deep x</code></td>
+<td>深拷贝</td>
+<td>递归完全独立</td>
+</tr>
+<tr>
+<td><code>%snap x</code></td>
+<td>快照</td>
+<td>COW 语义（当前实现退化为深拷贝）</td>
+</tr>
+<tr>
+<td><code>%net x</code></td>
+<td>网络序列化形式</td>
+<td>序列化为二进制传输格式</td>
+</tr>
+</tbody>
+</table>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>original = [[1, 2], [3, 4]]
+
+shallow = %copy original
+deep = %deep original
+
+# 浅拷贝：顶层独立，内层共享
+shallow.push([5, 6])
+print(len(original))   # 2（顶层不受影响）
+shallow[0].push(99)
+print(original[0])     # [1, 2, 99]（内层被共享修改了！）
+
+# 深拷贝：完全独立
+deep[1].push(88)
+print(original[1])     # [3, 4]（不受影响）
+</code></pre><hr>
+<h2 id="11-面向对象模式">11. 面向对象模式 </h2>
+<p>ssiLang 没有 <code>class</code> 关键字，但用闭包 + map 可以模拟对象：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn make_stack() {
+    data = []
+
+    fn push(v) {
+        data.push(v)
+        return null
+    }
+    fn pop(dummy) {
+        return data.pop()
+    }
+    fn peek(dummy) {
+        return data[len(data) - 1]
+    }
+    fn size(dummy) {
+        return len(data)
+    }
+
+    return {push: push, pop: pop, peek: peek, size: size}
+}
+
+stk = make_stack()
+stk.push(10)
+stk.push(20)
+stk.push(30)
+print(stk.size(0))    # 3
+print(stk.peek(0))    # 30
+print(stk.pop(0))     # 30
+</code></pre><p><strong>关键模式：</strong> 工厂函数返回一个 map，map 的值是闭包，闭包共享同一个 <code>data</code>。调用 <code>stk.push(10)</code> 时，runtime 在 map 中找到 key <code>"push"</code> 对应的函数并调用。</p>
+<blockquote>
+<p><strong><code>dummy</code> 参数的问题：</strong> 当前实现中，通过 map 调用函数时，方法名后面的括号内容会作为参数传递。对于只读方法，需要传一个占位参数。这是当前语言版本的限制。</p>
+</blockquote>
+<hr>
+<h2 id="115-错误处理-pcall">11.5 错误处理 <code>pcall()</code> </h2>
+<p>ssiLang 没有 try/catch 语法，但提供 <code>pcall</code>（protected call）内建函数来捕获运行时错误：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn risky() {
+    x = 10 / 0
+}
+
+result = pcall(() -&gt; risky())
+if result.ok {
+    print("成功: " + str(result.value))
+} else {
+    print("错误: " + result.error)
+}
+# 输出: 错误: [ln 2] Division by zero
+</code></pre><p><code>pcall(fn)</code> 接受一个无参函数，返回一个 map。现在最方便的写法就是直接传零参数 lambda：</p>
+<ul>
+<li>成功时：<code>{ok: true, value: &lt;返回值&gt;}</code></li>
+<li>出错时：<code>{ok: false, error: "&lt;错误信息&gt;"}</code></li>
+</ul>
+<p>适用于 IPC 操作等可能失败的场景：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>r = pcall(() -&gt; &amp;tcp("127.0.0.1:9999"))
+if not r.ok {
+    print("连接失败: " + r.error)
+}
+</code></pre><hr>
+<h2 id="116-json-支持">11.6 JSON 支持 </h2>
+<p><code>json_encode</code> 和 <code>json_parse</code> 提供 JSON 序列化/反序列化：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>data = {name: "Alice", scores: [90, 85], active: true}
+
+# 编码为 JSON 字符串
+s = json_encode(data)
+print(s)   # {"name":"Alice","scores":[90,85],"active":true}
+
+# 解析 JSON 字符串
+parsed = json_parse(s)
+print(parsed.name)     # Alice
+print(parsed.scores)   # [90, 85]
+</code></pre><p>支持所有基础类型：number, string, bool, null, list, map。</p>
+<p>但要分清楚：</p>
+<ul>
+<li><code>json_encode</code> / <code>json_parse</code> 的目标是“人类可读”和“跨语言通用”</li>
+<li><code>%net</code> 的目标是“ssiLang 运行时值的高效传输”</li>
+</ul>
+<p>两者不是一回事。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>推荐</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ssiLang 和 ssiLang 之间传值</td>
+<td><code>%net</code> + <code>send/recv</code> / <code>store/load</code></td>
+</tr>
+<tr>
+<td>和 Python/Go/Node 临时调试，想直接看懂内容</td>
+<td><code>send_raw(json_encode(...))</code></td>
+</tr>
+<tr>
+<td>面向外部系统、公共 API、抓包分析</td>
+<td>JSON</td>
+</tr>
+<tr>
+<td>追求更低解析成本、保留 ssiLang 类型结构</td>
+<td><code>%net</code></td>
+</tr>
+</tbody>
+</table>
+<p>如果双方都是你控制的程序，不要因为“怕规范不清楚”就默认退回 <code>&amp;tcp + JSON</code>。<code>%net</code> 的规范其实很明确，下面会把它讲透。</p>
+<hr>
+<h2 id="12-网络与进程间通信">12. 网络与进程间通信 </h2>
+<p>ssiLang 内建了最小但真实的 IPC 能力。最重要的是先建立统一心智模型：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>ssiLang 值
+  -&gt; %net          # 变成 net-form
+  -&gt; send/store    # 通过 tcp/pipe/shm 传输
+  -&gt; recv/load     # 还原回普通 ssiLang 值
+</code></pre><p>所以请把下面几层分开看：</p>
+<ul>
+<li><code>%net</code>：值编码格式</li>
+<li><code>tcp.send/recv</code>、<code>pipe.send/recv</code>：带消息边界的传输</li>
+<li><code>send_raw/recv_raw</code>：纯字节流，不做编码</li>
+<li><code>shm.store/load</code>：共享内存单槽读写</li>
+</ul>
+<h3 id="121-什么时候选什么">12.1 什么时候选什么 </h3>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>推荐</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>两个 ssiLang 进程走网络 RPC</td>
+<td><code>&amp;tcp</code> + <code>%net</code></td>
+</tr>
+<tr>
+<td>两个本机进程低延迟共享“最新状态”</td>
+<td><code>&amp;shm</code> + <code>%net</code></td>
+</tr>
+<tr>
+<td>两个本机进程做本地双向消息传递</td>
+<td><code>&amp;pipe</code> + <code>%net</code></td>
+</tr>
+<tr>
+<td>要和外部语言快速联调，但对方没实现 <code>%net</code></td>
+<td><code>send_raw</code> + JSON</td>
+</tr>
+<tr>
+<td>要精确控制协议或接入现有二进制协议</td>
+<td><code>send_raw</code> / <code>recv_raw</code></td>
+</tr>
+</tbody>
+</table>
+<p>一句话：</p>
+<ul>
+<li>要“值”就用 <code>%net</code></li>
+<li>要“字节”就用 <code>send_raw</code></li>
+<li>要“共享最新值”就用 <code>&amp;shm</code></li>
+<li>要“本地消息通道”就用 <code>&amp;pipe</code></li>
+<li>要“跨机器连接”就用 <code>&amp;tcp</code></li>
+</ul>
+<h3 id="122-net--值编码不是-json">12.2 <code>%net</code> — 值编码，不是 JSON </h3>
+<p>任何值都可以用 <code>%net</code> 转为传输形式：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>packet = %net {kind: "ping", data: [1, 2, 3]}
+print(type(packet))   # "net-form"
+</code></pre><p><code>%net</code> 生成的是 <code>net-form</code>，它不是字符串，不是 map，也不是 JSON 文本。它的设计目标是“把 ssiLang 的普通值变成可以传输的格式”。</p>
+<h4 id="1221-net-能编码什么">12.2.1 <code>%net</code> 能编码什么 </h4>
+<p>支持：</p>
+<ul>
+<li><code>number</code></li>
+<li><code>string</code></li>
+<li><code>bool</code></li>
+<li><code>null</code></li>
+<li><code>list</code></li>
+<li><code>map</code></li>
+</ul>
+<p>不支持：</p>
+<ul>
+<li><code>function</code></li>
+<li><code>link-ref</code></li>
+<li><code>link-tcp</code></li>
+<li><code>link-tcp-server</code></li>
+<li><code>link-pipe</code></li>
+<li><code>link-shm</code></li>
+<li>其他运行时句柄</li>
+</ul>
+<p>也就是说，<code>%net</code> 适合传“数据”，不适合传“行为”和“资源句柄”。</p>
+<h4 id="1222-net-的底层格式">12.2.2 <code>%net</code> 的底层格式 </h4>
+<p>当前实现的 payload 以版本头开头：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>V1\n
+</code></pre><p>后面紧跟一个递归值。值的编码规则是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>N&lt;number&gt;\n                 number
+S&lt;len&gt;:&lt;raw-bytes&gt;          string
+B1\n / B0\n                 bool
+Z\n                         null
+L&lt;count&gt;\n &lt;item&gt;...        list
+M&lt;count&gt;\n &lt;key&gt;&lt;value&gt;...  map
+</code></pre><p>注意点：</p>
+<ul>
+<li>字符串是“长度前缀 + 原始字节”，不是以 <code>\0</code> 结尾</li>
+<li>map 的 key 在编码时本质上也是字符串值</li>
+<li>list/map 递归编码</li>
+<li>版本号现在是 <code>V1</code></li>
+</ul>
+<p>例如：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>v = {a: 1, b: true, c: ["x", "y"]}
+packet = %net v
+</code></pre><p>概念上会变成类似：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>V1
+M3
+S1:aN1
+S1:bB1
+S1:cL2
+S1:xS1:y
+</code></pre><p>这里示意的是结构，不是为了让你手写字节流。重点是你现在知道：</p>
+<ul>
+<li><code>%net</code> 不是黑盒</li>
+<li>它是有版本头、有类型标签、有长度信息的递归格式</li>
+<li>它比 JSON 更接近运行时内部值</li>
+</ul>
+<h4 id="1223-net-什么时候优于-json">12.2.3 <code>%net</code> 什么时候优于 JSON </h4>
+<p><code>%net</code> 的优点：</p>
+<ul>
+<li>不需要在发送前先 <code>json_encode</code></li>
+<li>接收后直接得到普通 ssiLang 值</li>
+<li>能明确保留 <code>null/list/map/bool/number</code> 的结构</li>
+<li>本地进程间、ssiLang 对 ssiLang 协作时更直接</li>
+</ul>
+<p>JSON 的优点：</p>
+<ul>
+<li>外部生态支持广</li>
+<li>人类好读</li>
+<li>更适合公共协议和日志</li>
+</ul>
+<p>如果你控制通信双方，而且双方都愿意实现 V1 解码器，<code>%net</code> 完全可以作为正式协作格式，而不需要回退到 JSON。</p>
+<h3 id="123-tcp--跨机器或跨进程网络连接">12.3 <code>&amp;tcp</code> — 跨机器或跨进程网络连接 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn = &amp;tcp("127.0.0.1:9000")
+conn.send(%net {kind: "ping", n: 1})
+reply = conn.recv()
+conn.close()
+</code></pre><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conn.send(net_form)</code></td>
+<td>发送序列化数据</td>
+</tr>
+<tr>
+<td><code>conn.recv()</code></td>
+<td>阻塞接收并反序列化</td>
+</tr>
+<tr>
+<td><code>conn.send_raw(string)</code></td>
+<td>发送原始字节（无长度前缀）</td>
+</tr>
+<tr>
+<td><code>conn.recv_raw(n)</code></td>
+<td>接收 n 字节返回 string</td>
+</tr>
+<tr>
+<td><code>conn.peer_addr()</code></td>
+<td>返回对端地址字符串</td>
+</tr>
+<tr>
+<td><code>conn.set_timeout(secs)</code></td>
+<td>设置收发超时</td>
+</tr>
+<tr>
+<td><code>conn.close()</code></td>
+<td>关闭连接</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>&amp;tcp</code> 支持可选第二参数设置连接超时秒数：<code>&amp;tcp("host:port", 5)</code></p>
+</blockquote>
+<h4 id="1231-地址格式">12.3.1 地址格式 </h4>
+<p>当前实现接受的是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>"IPv4:port"
+</code></pre><p>例如：</p>
+<ul>
+<li><code>"127.0.0.1:9000"</code></li>
+<li><code>"192.168.1.10:8080"</code></li>
+</ul>
+<p>不要把它当成这些别的东西：</p>
+<ul>
+<li>不是 URL：<code>"http://127.0.0.1:9000"</code> 错</li>
+<li>不是 host/path：<code>"127.0.0.1/9000"</code> 错</li>
+<li>当前实现也不该假定支持 DNS 名称如 <code>"localhost:9000"</code></li>
+</ul>
+<p>如果你要最稳，直接用 IPv4 字面量。</p>
+<h4 id="1232-sendrecv-的消息边界">12.3.2 <code>send/recv</code> 的消息边界 </h4>
+<p><code>conn.send(%net value)</code> 不是裸写 payload。实现会在外层再包一层消息 framing：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>[4-byte length][payload bytes]
+</code></pre><p>其中：</p>
+<ul>
+<li><code>length</code> 是 payload 长度</li>
+<li><code>payload</code> 就是 <code>%net</code> 生成的 <code>V1...</code> 数据</li>
+</ul>
+<p>这意味着 <code>recv()</code> 每次读到的是“一整条消息”，不是半包，不是流式片段。</p>
+<blockquote>
+<p>重要：当前实现已经把这 4 字节长度字段固定为 little-endian <code>uint32</code>。<br>
+也就是说，跨语言互通时可以明确按“小端 uint32 长度前缀 + V1 payload”实现，而不是猜宿主机字节序。</p>
+</blockquote>
+<h4 id="1233-send_rawrecv_raw">12.3.3 <code>send_raw/recv_raw</code> </h4>
+<p>这是纯字节流接口：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send_raw("HELLO")
+raw = conn.recv_raw(5)
+print(raw)   # HELLO
+</code></pre><p>它和 <code>send/recv</code> 完全不是一套协议：</p>
+<ul>
+<li><code>send/recv</code>：传“编码后的值”</li>
+<li><code>send_raw/recv_raw</code>：传“原始字节”</li>
+</ul>
+<p>不要混用：</p>
+<ul>
+<li><code>send_raw(...)</code> 后面接 <code>recv()</code>：错</li>
+<li><code>send(%net ...)</code> 后面接 <code>recv_raw(n)</code>：通常也错，除非你自己知道 framing 在干什么</li>
+</ul>
+<h4 id="1234-ssilang-对-ssilang推荐写法">12.3.4 ssiLang 对 ssiLang：推荐写法 </h4>
+<p>客户端：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn = &amp;tcp("127.0.0.1:9000")
+conn.send(%net {kind: "sum", a: 20, b: 22})
+reply = conn.recv()
+print(reply.ok)
+print(reply.value)
+conn.close()
+</code></pre><p>服务端：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>srv = tcp_listen("127.0.0.1:9000")
+peer = srv.accept()
+req = peer.recv()
+
+if req.kind == "sum" {
+    peer.send(%net {ok: true, value: req.a + req.b})
+} else {
+    peer.send(%net {ok: false, error: "unknown kind"})
+}
+
+peer.close()
+srv.close()
+</code></pre><h4 id="tcp-服务端">TCP 服务端 </h4>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>srv = tcp_listen("0.0.0.0:9000")
+peer = srv.accept()            # 阻塞等待客户端连接
+peer.send(%net {status: "ok"})
+msg = peer.recv()
+peer.close()
+srv.close()
+</code></pre><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>srv.accept()</code></td>
+<td>阻塞等待连接，返回新 TCP handle</td>
+</tr>
+<tr>
+<td><code>srv.addr()</code></td>
+<td>返回绑定地址字符串</td>
+</tr>
+<tr>
+<td><code>srv.close()</code></td>
+<td>关闭监听 socket</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>tcp_listen</code> 支持可选第二参数设置 backlog：<code>tcp_listen("0.0.0.0:9000", 32)</code></p>
+</blockquote>
+<h4 id="1235-和其他语言协作python-最小互通示例">12.3.5 和其他语言协作：Python 最小互通示例 </h4>
+<p>如果你不想退回 JSON，而是想直接和 <code>%net</code> 协作，外部语言至少要做两件事：</p>
+<ol>
+<li>读写 4 字节长度前缀</li>
+<li>解析 / 生成 <code>V1</code> payload</li>
+</ol>
+<p>下面是 Python 侧最小 framing：</p>
+<pre data-role="codeBlock" data-info="python" class="language-python python"><code><span class="token keyword keyword-import">import</span> socket
+<span class="token keyword keyword-import">import</span> struct
+
+<span class="token keyword keyword-def">def</span> <span class="token function">recv_exact</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> n<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    buf <span class="token operator">=</span> <span class="token builtin">bytearray</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword keyword-while">while</span> <span class="token builtin">len</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span> <span class="token operator">&lt;</span> n<span class="token punctuation">:</span>
+        chunk <span class="token operator">=</span> sock<span class="token punctuation">.</span>recv<span class="token punctuation">(</span>n <span class="token operator">-</span> <span class="token builtin">len</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword keyword-if">if</span> <span class="token keyword keyword-not">not</span> chunk<span class="token punctuation">:</span>
+            <span class="token keyword keyword-raise">raise</span> RuntimeError<span class="token punctuation">(</span><span class="token string">"socket closed"</span><span class="token punctuation">)</span>
+        buf<span class="token punctuation">.</span>extend<span class="token punctuation">(</span>chunk<span class="token punctuation">)</span>
+    <span class="token keyword keyword-return">return</span> <span class="token builtin">bytes</span><span class="token punctuation">(</span>buf<span class="token punctuation">)</span>
+
+<span class="token keyword keyword-def">def</span> <span class="token function">recv_frame</span><span class="token punctuation">(</span>sock<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># ssiLang v2.2 固定使用 little-endian uint32 长度前缀</span>
+    length <span class="token operator">=</span> struct<span class="token punctuation">.</span>unpack<span class="token punctuation">(</span><span class="token string">"&lt;I"</span><span class="token punctuation">,</span> recv_exact<span class="token punctuation">(</span>sock<span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+    <span class="token keyword keyword-return">return</span> recv_exact<span class="token punctuation">(</span>sock<span class="token punctuation">,</span> length<span class="token punctuation">)</span>
+
+<span class="token keyword keyword-def">def</span> <span class="token function">send_frame</span><span class="token punctuation">(</span>sock<span class="token punctuation">,</span> payload<span class="token punctuation">:</span> <span class="token builtin">bytes</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    sock<span class="token punctuation">.</span>sendall<span class="token punctuation">(</span>struct<span class="token punctuation">.</span>pack<span class="token punctuation">(</span><span class="token string">"&lt;I"</span><span class="token punctuation">,</span> <span class="token builtin">len</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span> payload<span class="token punctuation">)</span>
+</code></pre><p>再加上一个 V1 解析器就可以直接互通。V1 的规则就是上一节列出的标签格式。</p>
+<p>如果外部语言暂时还没实现 V1 parser，但你又想先把链路打通，那么退一步用：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send_raw(json_encode(data))
+</code></pre><p>这是“过渡方案”，不是 <code>%net</code> 不可用。</p>
+<h3 id="124-pipe--本机管道不走网络栈">12.4 <code>&amp;pipe</code> — 本机管道，不走网络栈 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 匿名管道（单进程内可测试）
+p = &amp;pipe()
+p.send(%net 42)
+got = p.recv()
+print(got)       # 42
+p.close()
+
+# 命名管道（跨进程通信）
+p = &amp;pipe("my_channel")
+p.send(%net {task: "compute", args: [1, 2, 3]})
+result = p.recv()
+p.close()
+</code></pre><p><code>&amp;pipe</code> 有两种形态：</p>
+<ul>
+<li><code>&amp;pipe()</code>：匿名管道</li>
+<li><code>&amp;pipe("name")</code>：命名管道</li>
+</ul>
+<h4 id="1241-匿名管道">12.4.1 匿名管道 </h4>
+<p>匿名管道更适合：</p>
+<ul>
+<li>单进程测试</li>
+<li>父子流程式协作</li>
+<li>不需要全局名字的临时通道</li>
+</ul>
+<p>它本质上是一个本地双端通道，ssiLang 把读端和写端封装进一个 handle，所以你可以直接：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>p = &amp;pipe()
+p.send(%net 42)
+print(p.recv())   # 42
+</code></pre><h4 id="1242-命名管道">12.4.2 命名管道 </h4>
+<p>命名管道更适合两个独立进程在同一台机器上通信。</p>
+<p>平台上的实际名字是：</p>
+<ul>
+<li>Windows：<code>\\.\pipe\&lt;name&gt;</code></li>
+<li>POSIX：<code>/tmp/sl_pipe_&lt;name&gt;</code></li>
+</ul>
+<p>所以：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>p = &amp;pipe("jobs")
+</code></pre><p>对应的是：</p>
+<ul>
+<li>Windows：<code>\\.\pipe\jobs</code></li>
+<li>Linux/macOS(POSIX)：<code>/tmp/sl_pipe_jobs</code></li>
+</ul>
+<h4 id="1243-pipesendrecv-的协议">12.4.3 <code>pipe.send/recv</code> 的协议 </h4>
+<p>它和 TCP 一样，也是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>[4-byte length][V1 payload]
+</code></pre><p>所以跨语言协作时，读取逻辑和 TCP 基本一样，只是底层句柄从 socket 换成了 pipe/fifo。</p>
+<h4 id="1244-什么时候选-pipe">12.4.4 什么时候选 <code>&amp;pipe</code> </h4>
+<p>适合：</p>
+<ul>
+<li>同机进程通信</li>
+<li>不需要 TCP 网络配置</li>
+<li>想要 <code>%net</code> 的值语义，但不想经过网络栈</li>
+</ul>
+<p>不适合：</p>
+<ul>
+<li>跨机器</li>
+<li>广域网服务</li>
+<li>想共享一块最新状态内存</li>
+</ul>
+<h4 id="1245-常用方法">12.4.5 常用方法 </h4>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>p.send(%net v)</code></td>
+<td>发送一条完整消息</td>
+</tr>
+<tr>
+<td><code>p.recv()</code></td>
+<td>接收一条完整消息</td>
+</tr>
+<tr>
+<td><code>p.is_named()</code></td>
+<td>是否为命名管道</td>
+</tr>
+<tr>
+<td><code>p.name()</code></td>
+<td>命名管道名称，匿名管道返回 <code>null</code></td>
+</tr>
+<tr>
+<td><code>p.flush()</code></td>
+<td>刷新底层管道</td>
+</tr>
+<tr>
+<td><code>p.close()</code></td>
+<td>关闭句柄</td>
+</tr>
+</tbody>
+</table>
+<h3 id="125-shm--共享内存单槽不是消息队列">12.5 <code>&amp;shm</code> — 共享内存单槽，不是消息队列 </h3>
+<p>单值槽模型，适合跨进程共享一个值。内置 spinlock 自动同步，支持可配置大小：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>slot = &amp;shm("my_counter")            # 默认 4096 字节
+slot = &amp;shm("big_data", 65536)       # 自定义大小
+
+# 写入（自动加锁）
+slot.store(%net 42)
+
+# 读取（自动加锁）
+val = slot.load()
+print(val)          # 42
+
+# 覆写
+slot.store(%net {config: "fast", limit: 100})
+print(slot.load())  # {config: "fast", limit: 100}
+
+slot.close()
+</code></pre><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slot.store(net_form)</code></td>
+<td>写入共享内存（自动加锁）</td>
+</tr>
+<tr>
+<td><code>slot.load()</code></td>
+<td>读取当前值，空槽返回 <code>null</code>（自动加锁）</td>
+</tr>
+<tr>
+<td><code>slot.clear()</code></td>
+<td>清空数据（加锁后写 length=0）</td>
+</tr>
+<tr>
+<td><code>slot.size()</code></td>
+<td>返回分配的字节数</td>
+</tr>
+<tr>
+<td><code>slot.name()</code></td>
+<td>返回共享内存名称</td>
+</tr>
+<tr>
+<td><code>slot.close()</code></td>
+<td>释放共享内存访问</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Owner 语义：</strong> 第一个创建共享内存段的进程是 owner。只有 owner 关闭时才会删除底层资源（POSIX <code>shm_unlink</code>），其他 handle 关闭仅解除映射。</p>
+</blockquote>
+<h4 id="1251-正确心智模型">12.5.1 正确心智模型 </h4>
+<p>把 <code>&amp;shm</code> 想成：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>一个带锁的“最新值寄存器”
+</code></pre><p>而不是：</p>
+<ul>
+<li>队列</li>
+<li>数据库</li>
+<li>多槽共享数组</li>
+<li>自动 merge 的共享 map</li>
+</ul>
+<p>每次 <code>store(%net v)</code> 都会直接覆盖之前的内容。</p>
+<p>所以它特别适合：</p>
+<ul>
+<li>发布当前状态</li>
+<li>发布最新配置</li>
+<li>发布最新计算结果</li>
+<li>一个生产者不断刷新、多个消费者不断读取</li>
+</ul>
+<p>不适合：</p>
+<ul>
+<li>需要保留历史消息</li>
+<li>多个写者做复杂事务</li>
+<li>想用它模拟 append log</li>
+</ul>
+<h4 id="1252-共享内存的底层布局">12.5.2 共享内存的底层布局 </h4>
+<p>当前实现里，一段共享内存的布局是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>offset 0..3   : 4-byte spinlock
+offset 4..7   : 4-byte little-endian payload length
+offset 8..end : payload bytes（即 %net 的 V1 数据）
+</code></pre><p>语义上：</p>
+<ul>
+<li>lock = <code>0</code>：空闲</li>
+<li>lock = <code>1</code>：持有锁</li>
+<li><code>length = 0</code>：槽为空，<code>load()</code> 返回 <code>null</code></li>
+<li><code>length &gt; 0</code>：后面跟着一份完整 <code>%net</code> payload</li>
+</ul>
+<p>这也解释了为什么容量并不是全部可用给业务数据：真正能存的 payload 大约是：</p>
+<pre data-role="codeBlock" data-info="text" class="language-text text"><code>size - 8
+</code></pre><h4 id="1253-名称与跨语言协作">12.5.3 名称与跨语言协作 </h4>
+<p>底层名字是：</p>
+<ul>
+<li>Windows：<code>Local\sl_shm_&lt;name&gt;</code></li>
+<li>POSIX：<code>/sl_shm_&lt;name&gt;</code></li>
+</ul>
+<p>如果你想让 Python/C++/Rust 直接访问同一块共享内存，外部程序需要：</p>
+<ol>
+<li>打开同名共享内存对象</li>
+<li>按同样的布局解释前 8 个字节</li>
+<li>遵守相同的锁协议</li>
+<li>把 payload 当作 <code>%net V1</code> 数据解析</li>
+</ol>
+<p>如果外部程序不实现同一套锁协议，读写就可能互相踩坏。</p>
+<h4 id="1254-什么时候选-shm">12.5.4 什么时候选 <code>&amp;shm</code> </h4>
+<p>当你关心的是：</p>
+<ul>
+<li>同机</li>
+<li>低开销</li>
+<li>最新值</li>
+<li>快速轮询读取</li>
+</ul>
+<p>就选 <code>&amp;shm</code>。</p>
+<p>如果你关心的是：</p>
+<ul>
+<li>每条消息都不能丢</li>
+<li>有先后顺序</li>
+<li>一问一答</li>
+</ul>
+<p>那应该选 <code>&amp;pipe</code> 或 <code>&amp;tcp</code>。</p>
+<h3 id="126-典型错误杀一儆百">12.6 典型错误：杀一儆百 </h3>
+<p>下面这些错法最容易让人把 ssiLang 和别的语言模型混淆。</p>
+<h4 id="错误-1把-net-当成-json">错误 1：把 <code>%net</code> 当成 JSON </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>packet = %net {a: 1}
+print(packet)   # 以为会打印 {"a":1}
+</code></pre><p>对：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>packet = %net {a: 1}
+conn.send(packet)
+
+json = json_encode({a: 1})
+conn.send_raw(json)
+</code></pre><p><code>%net</code> 是运行时编码，不是给人看的 JSON。</p>
+<h4 id="错误-2忘了-send--store-只吃-net-form">错误 2：忘了 <code>send</code> / <code>store</code> 只吃 net-form </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send({a: 1})
+slot.store([1, 2, 3])
+</code></pre><p>对：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send(%net {a: 1})
+slot.store(%net [1, 2, 3])
+</code></pre><h4 id="错误-3把-send_raw-和-recv-混用">错误 3：把 <code>send_raw</code> 和 <code>recv</code> 混用 </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send_raw("hello")
+v = conn.recv()
+</code></pre><p>对：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send_raw("hello")
+s = conn.recv_raw(5)
+</code></pre><p>或者：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn.send(%net "hello")
+v = conn.recv()
+</code></pre><h4 id="错误-4把-shm-当消息队列">错误 4：把 <code>&amp;shm</code> 当消息队列 </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>slot.store(%net "first")
+slot.store(%net "second")
+print(slot.load())   # 以为能取到 first 再取 second
+</code></pre><p>实际只会读到最后一次写入的 <code>"second"</code>。</p>
+<h4 id="错误-5把-tcp-地址写成-url">错误 5：把 <code>&amp;tcp</code> 地址写成 URL </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn = &amp;tcp("http://127.0.0.1:9000")
+</code></pre><p>对：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn = &amp;tcp("127.0.0.1:9000")
+</code></pre><h4 id="错误-6以为函数和句柄也能-net">错误 6：以为函数和句柄也能 <code>%net</code> </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>f = x -&gt; x + 1
+packet = %net f
+</code></pre><p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>conn = &amp;tcp("127.0.0.1:9000")
+packet = %net conn
+</code></pre><p><code>%net</code> 传的是普通数据，不传函数和资源句柄。</p>
+<h4 id="错误-7以为-recv_rawn-按消息条数读">错误 7：以为 <code>recv_raw(n)</code> 按“消息条数”读 </h4>
+<p>错：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>msg = conn.recv_raw(1)   # 以为是读一条消息
+</code></pre><p>对：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>msg = conn.recv_raw(1)   # 这是只读 1 个字节
+</code></pre><p><code>recv_raw(n)</code> 的参数单位是“字节数”。</p>
+<h3 id="127-选型建议别再下意识退回-tcp--json">12.7 选型建议：别再下意识退回 <code>&amp;tcp + JSON</code> </h3>
+<p>最后给一个实用结论：</p>
+<ul>
+<li>双方都是 ssiLang：直接 <code>%net</code></li>
+<li>你控制外部语言实现：优先 <code>%net V1</code></li>
+<li>公共 API / 人类可读日志：JSON</li>
+<li>同机最新状态同步：<code>&amp;shm + %net</code></li>
+<li>同机消息通信：<code>&amp;pipe + %net</code></li>
+<li>网络请求应答：<code>&amp;tcp + %net</code></li>
+</ul>
+<p>JSON 不是默认答案。它只是“最通用”的答案，不是“最合适”的答案。</p>
+<hr>
+<h2 id="13-算法竞赛实战">13. 算法竞赛实战 </h2>
+<p>下面是几个常见算法的完整 ssiLang 实现，帮你建立"在这门语言里该怎么写"的直觉。</p>
+<h3 id="131-二维-dp-模板01-背包">13.1 二维 DP 模板（01 背包） </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn knapsack(weights, values, cap) {
+    n = len(weights)
+    # 初始化 (n+1) x (cap+1) 的二维数组
+    dp = []
+    for i in range(n + 1) {
+        row = []
+        for j in range(cap + 1) {
+            row.push(0)
+        }
+        dp.push(row)
+    }
+    # 填表
+    for i in range(1, n + 1) {
+        for w in range(cap + 1) {
+            dp[i][w] = dp[i - 1][w]
+            if weights[i - 1] &lt;= w {
+                val = dp[i - 1][w - weights[i - 1]] + values[i - 1]
+                if val &gt; dp[i][w] {
+                    dp[i][w] = val
+                }
+            }
+        }
+    }
+    return dp[n][cap]
+}
+
+print(knapsack([2, 3, 4, 5], [3, 4, 5, 6], 8))   # 10
+</code></pre><p><strong>要点：</strong> ssiLang 没有 <code>vector&lt;vector&lt;int&gt;&gt;</code> 的一步初始化，需要循环 push 构建二维数组。</p>
+<h3 id="132-图论模板dijkstra">13.2 图论模板（Dijkstra） </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn dijkstra(graph, src, n) {
+    dist = []
+    visited = []
+    for i in range(n) {
+        dist.push(999999)
+        visited.push(false)
+    }
+    dist[src] = 0
+
+    for step in range(n) {
+        # 找最小未访问节点
+        u = -1
+        best = 999999
+        for i in range(n) {
+            if not visited[i] and dist[i] &lt; best {
+                best = dist[i]
+                u = i
+            }
+        }
+        if u == -1 =&gt; break
+        visited[u] = true
+
+        # 松弛邻居
+        for e in graph[u] {
+            v = e[0]
+            w = e[1]
+            if dist[u] + w &lt; dist[v] {
+                dist[v] = dist[u] + w
+            }
+        }
+    }
+    return dist
+}
+
+# 邻接表：graph[u] = [[v, w], ...]
+graph = [
+    [[1, 1], [3, 4]],
+    [[2, 2], [4, 1]],
+    [[4, 1]],
+    [[4, 3]],
+    []
+]
+print(dijkstra(graph, 0, 5))   # [0, 1, 3, 4, 2]
+</code></pre><h3 id="133-递归树结构">13.3 递归树结构 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn node(val, left, right) {
+    return {val: val, left: left, right: right}
+}
+
+fn leaf(val) =&gt; node(val, null, null)
+
+fn tree_sum(n) {
+    if n == null =&gt; return 0
+    return n.val + tree_sum(n.left) + tree_sum(n.right)
+}
+
+fn inorder(n) {
+    if n == null =&gt; return []
+    l = inorder(n.left)
+    r = inorder(n.right)
+    result = []
+    for x in l { result.push(x) }
+    result.push(n.val)
+    for x in r { result.push(x) }
+    return result
+}
+
+tree = node(4,
+    node(2, leaf(1), leaf(3)),
+    node(6, leaf(5), leaf(7))
+)
+print(tree_sum(tree))    # 28
+print(inorder(tree))     # [1, 2, 3, 4, 5, 6, 7]
+</code></pre><h3 id="134-快速幂">13.4 快速幂 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn mod_pow(base, exp, m) {
+    result = 1
+    base = base % m
+    while exp &gt; 0 {
+        if exp % 2 == 1 {
+            result = result * base % m
+        }
+        exp = int(exp / 2)
+        base = base * base % m
+    }
+    return result
+}
+
+print(mod_pow(2, 10, 1000))          # 24
+print(mod_pow(3, 13, 1000000007))    # 1594323
+</code></pre><h3 id="135-归并排序">13.5 归并排序 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn merge(left, right) {
+    result = []
+    i = 0
+    j = 0
+    while i &lt; len(left) and j &lt; len(right) {
+        if left[i] &lt;= right[j] {
+            result.push(left[i])
+            i = i + 1
+        } else {
+            result.push(right[j])
+            j = j + 1
+        }
+    }
+    while i &lt; len(left) {
+        result.push(left[i])
+        i = i + 1
+    }
+    while j &lt; len(right) {
+        result.push(right[j])
+        j = j + 1
+    }
+    return result
+}
+
+fn mergesort(arr) {
+    n = len(arr)
+    if n &lt;= 1 =&gt; return arr
+    mid = int(n / 2)
+    left = mergesort(arr.slice(0, mid))
+    right = mergesort(arr.slice(mid, n))
+    return merge(left, right)
+}
+
+print(mergesort([38, 27, 43, 3, 9, 82, 10]))
+# [3, 9, 10, 27, 38, 43, 82]
+</code></pre><h3 id="136-带记忆化的递归">13.6 带记忆化的递归 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn make_memo_fib() {
+    cache = {"0": 0, "1": 1}
+    fn fib(n) {
+        key = str(n)
+        cached = cache?[key]
+        if cached != null =&gt; return cached
+        result = fib(n - 1) + fib(n - 2)
+        cache[key] = result
+        return result
+    }
+    return fib
+}
+
+memo_fib = make_memo_fib()
+print(memo_fib(30))   # 832040
+</code></pre><blockquote>
+<p><strong>注意：</strong> map 的 key 必须是 string，所以数字要先 <code>str()</code> 转换。<code>cache?[key]</code> 用 safe access 避免 key 不存在时报错。</p>
+</blockquote>
+<hr>
+<h2 id="14-c-程序员速查对照表">14. C++ 程序员速查对照表 </h2>
+<table>
+<thead>
+<tr>
+<th>C++</th>
+<th>ssiLang</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>int x = 42;</code></td>
+<td><code>x = 42</code></td>
+<td>无类型声明，无分号</td>
+</tr>
+<tr>
+<td><code>std::string s = "hi";</code></td>
+<td><code>s = "hi"</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::vector&lt;int&gt; v = {1,2,3};</code></td>
+<td><code>v = [1, 2, 3]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::map&lt;string,int&gt; m;</code></td>
+<td><code>m = {}</code></td>
+<td>key 只能是 string</td>
+</tr>
+<tr>
+<td><code>v.push_back(x);</code></td>
+<td><code>v.push(x)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>v.pop_back();</code></td>
+<td><code>v.pop()</code></td>
+<td>且返回弹出的值</td>
+</tr>
+<tr>
+<td><code>v.size()</code></td>
+<td><code>len(v)</code></td>
+<td>全局函数</td>
+</tr>
+<tr>
+<td><code>v[i]</code></td>
+<td><code>v[i]</code></td>
+<td>相同</td>
+</tr>
+<tr>
+<td><code>m["key"]</code></td>
+<td><code>m["key"]</code> 或 <code>m.key</code></td>
+<td>支持点号语法</td>
+</tr>
+<tr>
+<td><code>m.count("k")</code></td>
+<td><code>m.has("k")</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>m.erase("k")</code></td>
+<td><code>m.remove("k")</code></td>
+<td>返回被移除的值</td>
+</tr>
+<tr>
+<td><code>for(int i=0;i&lt;n;i++)</code></td>
+<td><code>for i in range(n)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>for(auto&amp; x : vec)</code></td>
+<td><code>for x in vec</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>cond ? a : b</code></td>
+<td><code>cond =&gt; a || b</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>x?.value()</code></td>
+<td><code>x?.value</code></td>
+<td>Safe access</td>
+</tr>
+<tr>
+<td><code>std::sort(v.begin(),v.end())</code></td>
+<td><code>sort(v)</code></td>
+<td>返回新列表</td>
+</tr>
+<tr>
+<td><code>auto f = [](int x){ return x*2; };</code></td>
+<td><code>f = x -&gt; x * 2</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>int&amp; ref = arr[i];</code></td>
+<td><code>ref = &amp;ref arr[i]</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>*ref = 42;</code></td>
+<td><code>ref.set(42)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::cout &lt;&lt; x;</code></td>
+<td><code>print(x)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std::cin &gt;&gt; s;</code></td>
+<td><code>s = input()</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>// comment</code></td>
+<td><code># comment</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>nullptr</code></td>
+<td><code>null</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>dynamic_cast</code> / <code>typeid</code></td>
+<td><code>type(v)</code></td>
+<td>返回字符串</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="15-关键字完整列表">15. 关键字完整列表 </h2>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>fn  if  else  while  for  in  return  break  continue
+true  false  null  and  or  not
+</code></pre><p>一共 15 个，比 C++ 的 90+ 个少很多。</p>
+<hr>
+<h2 id="16-常见坑与技巧">16. 常见坑与技巧 </h2>
+<h3 id="161-除法是浮点除法">16.1 除法是浮点除法 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>print(7 / 2)       # 3.5，不是 3
+print(int(7 / 2))  # 3（需要手动截断）
+</code></pre><h3 id="162-没有-">16.2 没有 <code>+=</code>、<code>++</code> </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 错误
+# x += 1
+# x++
+
+# 正确
+x = x + 1
+</code></pre><h3 id="163--在语句位置是-block在表达式位置是-map">16.3 <code>{}</code> 在语句位置是 block，在表达式位置是 map </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>if true {          # 这里的 {} 是 block
+    print("yes")
+}
+
+m = {a: 1}        # 这里的 {} 是 map
+</code></pre><h3 id="164-map-key-必须是-string">16.4 map key 必须是 string </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>m = {}
+m[0] = "zero"     # key 实际上是数字...
+m["0"] = "zero"   # 推荐显式用字符串
+
+# 做记忆化时：
+cache[str(n)] = result   # 数字 key 先转 string
+cached = cache?[str(n)]  # 查询也用 string
+</code></pre><h3 id="165-闭包修改外层变量">16.5 闭包修改外层变量 </h3>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code># 这样不行——x = x + 1 在内层创建了新绑定
+x = 0
+fn bad_inc() {
+    x = x + 1   # 这里的 x 是新的局部变量！
+}
+
+# 这样可以——通过列表间接修改
+state = [0]
+fn good_inc() {
+    state[0] = state[0] + 1
+}
+good_inc()
+print(state[0])   # 1
+</code></pre><h3 id="166-数值精度">16.6 数值精度 </h3>
+<p>底层是 <code>double</code>（64 位浮点），大整数会丢失精度：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>print(9007199254740992 + 1)   # 可能不准确
+# 对于竞赛中的大数取模题，在 10^15 以内是安全的
+</code></pre><hr>
+<h2 id="17-完整程序示例词频统计">17. 完整程序示例：词频统计 </h2>
+<p>一个展示多种语言特性的完整程序：</p>
+<pre data-role="codeBlock" data-info="sl" class="language-sl sl"><code>fn word_freq(text) {
+    words = text.split(" ")
+    freq = {}
+    for w in words {
+        w = w.trim()
+        if len(w) == 0 =&gt; continue
+        c = freq?[w]
+        freq[w] = (c == null =&gt; 1 || c + 1)
+    }
+    return freq
+}
+
+fn top_words(freq, n) {
+    keys = freq.keys()
+    # 简单选择排序找 top n
+    result = []
+    for round in range(n) {
+        best_key = ""
+        best_count = -1
+        for k in keys {
+            c = freq[k]
+            if c &gt; best_count {
+                best_count = c
+                best_key = k
+            }
+        }
+        if best_key == "" =&gt; break
+        result.push({word: best_key, count: best_count})
+        freq[best_key] = -1   # 标记已选
+    }
+    return result
+}
+
+text = "the cat sat on the mat the cat ate the rat"
+freq = word_freq(text)
+print("All frequencies:")
+for k in freq.keys() {
+    print("  " + k + ": " + str(freq[k]))
+}
+
+top = top_words(%deep freq, 3)
+print("Top 3:")
+for item in top {
+    print("  " + item.word + " -&gt; " + str(item.count))
+}
+</code></pre><hr>
+<h2 id="附录-assilang-方法速查">附录 A：ssiLang 方法速查 </h2>
+<h3 id="list-方法">List 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>修改原列表</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.push(v)</code></td>
+<td>是</td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.pop()</code></td>
+<td>是</td>
+<td>弹出的元素</td>
+</tr>
+<tr>
+<td><code>.slice(start, end)</code></td>
+<td>否</td>
+<td>新列表</td>
+</tr>
+<tr>
+<td><code>.map(fn)</code></td>
+<td>否</td>
+<td>新列表</td>
+</tr>
+<tr>
+<td><code>.filter(fn)</code></td>
+<td>否</td>
+<td>新列表</td>
+</tr>
+<tr>
+<td><code>.reduce(fn, init)</code></td>
+<td>否</td>
+<td>累积值</td>
+</tr>
+<tr>
+<td><code>.find(fn)</code></td>
+<td>否</td>
+<td>元素或 <code>null</code></td>
+</tr>
+<tr>
+<td><code>.contains(v)</code></td>
+<td>否</td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.join(sep)</code></td>
+<td>否</td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.reverse()</code></td>
+<td>否</td>
+<td>新列表</td>
+</tr>
+</tbody>
+</table>
+<h3 id="string-方法">String 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.split(sep)</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td><code>.trim()</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.chars()</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td><code>.starts_with(s)</code></td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.ends_with(s)</code></td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.contains(s)</code></td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.replace(old, new)</code></td>
+<td><code>string</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="map-方法">Map 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.keys()</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td><code>.values()</code></td>
+<td><code>list</code></td>
+</tr>
+<tr>
+<td><code>.has(key)</code></td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.remove(key)</code></td>
+<td>被移除的值或 <code>null</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tcp-client-方法">TCP Client 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.send(net_form)</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.recv()</code></td>
+<td>反序列化后的值</td>
+</tr>
+<tr>
+<td><code>.send_raw(string)</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.recv_raw(n)</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.peer_addr()</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.set_timeout(secs)</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.close()</code></td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tcp-server-方法">TCP Server 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.accept()</code></td>
+<td>新 TCP client handle</td>
+</tr>
+<tr>
+<td><code>.addr()</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.close()</code></td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="pipe-方法">Pipe 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.send(net_form)</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.recv()</code></td>
+<td>反序列化后的值</td>
+</tr>
+<tr>
+<td><code>.is_named()</code></td>
+<td><code>bool</code></td>
+</tr>
+<tr>
+<td><code>.name()</code></td>
+<td><code>string</code> 或 <code>null</code></td>
+</tr>
+<tr>
+<td><code>.flush()</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.close()</code></td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="shm-方法">SHM 方法 </h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.store(net_form)</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.load()</code></td>
+<td>值或 <code>null</code></td>
+</tr>
+<tr>
+<td><code>.clear()</code></td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><code>.size()</code></td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><code>.name()</code></td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><code>.close()</code></td>
+<td><code>null</code></td>
+</tr>
+</tbody>
+</table>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>

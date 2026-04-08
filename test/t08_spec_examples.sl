@@ -66,7 +66,7 @@ print(value)
 
 fn normalize(x) => x * 10
 fn encode(x) => x + 1
-out = 5::normalize::encode
+out = 5 |> normalize |> encode
 print(out)
 
 result = [1, 2, 3, 4, 5] |> map(x -> x * 2) |> filter(x -> x > 3)

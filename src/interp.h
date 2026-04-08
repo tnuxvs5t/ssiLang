@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "parser.h"
 #include <filesystem>
 #include <fstream>
@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 #include <cerrno>
+#include <limits>
 #include <unordered_set>
 
 #ifdef _WIN32
@@ -488,12 +489,23 @@ struct Interp{
         case Node::sCONT:throw ContSig{};
         case Node::sEXPR:eval(n->ch[0],env);break;
         case Node::sBLOCK:for(auto&s:n->ch)exec(s,env);break;
+        case Node::sCTX:{
+            auto ctx=eval(n->ch[0],env);
+            auto ctxEnv=std::make_shared<Env>(env);
+            ctxEnv->set("__ctx",ctx);
+            exec(n->ch[1],ctxEnv);
+            break;
+        }
         default:die("Bad stmt",n->ln);
         }
     }
 
     void assignTo(NP t,Value&val,std::shared_ptr<Env> env){
-        if(t->k==Node::eMEM){
+        if(t->k==Node::eOUTER){
+            auto dst=env->findOuterEnv(t->s);
+            if(!dst)die("Undefined outer binding: "+t->s,t->ln);
+            dst->set(t->s,val);
+        }else if(t->k==Node::eMEM){
             auto base=eval(t->ch[0],env);
             if(base.ty!=Value::MAP)die("Cannot set member on "+std::string(base.TyName()),t->ln);
             auto&m=base.map();
@@ -502,11 +514,12 @@ struct Interp{
         }else if(t->k==Node::eIDX){
             auto base=eval(t->ch[0],env);auto idx=eval(t->ch[1],env);
             if(base.ty==Value::LIST){
-                int i=(int)idx.n;
+                int i=intIndex(idx,"list assignment requires integer index",t->ln);
                 auto&l=base.list();
                 if(i<0||i>=(int)l.size())die("Index out of range",t->ln);
                 l[i]=val;
             }else if(base.ty==Value::MAP){
+                if(idx.ty!=Value::STR)die("map assignment requires string key",t->ln);
                 auto&m=base.map();
                 for(auto&[k,v]:m){
                     if(k==idx.s){v=val;return;}
@@ -525,6 +538,9 @@ struct Interp{
         case Node::eBOOL:return Value::Bool(n->num!=0);
         case Node::eNUL:return Value::Null();
         case Node::eID:{auto*v=env->find(n->s);if(!v)die("Undefined: "+n->s,n->ln);return*v;}
+        case Node::eOUTER:{auto*v=env->findOuter(n->s);if(!v)die("Undefined outer binding: "+n->s,n->ln);return*v;}
+        case Node::eCTX:{auto*v=env->findCtx();if(!v)die("No current context",n->ln);return*v;}
+        case Node::ePH:die("Placeholder escaped lowering",n->ln);
         case Node::eLIST:{VVec items;for(auto&c:n->ch)items.push_back(eval(c,env));return Value::List(std::move(items));}
         case Node::eMAP:{VMap ents;for(auto&[k,v]:n->entries)ents.push_back({k,eval(v,env)});return Value::Map(std::move(ents));}
         case Node::eUN:return evalUn(n,env);
@@ -536,6 +552,12 @@ struct Interp{
         case Node::eCALL:return evalCall(n,env);
         case Node::eSPLIT:{auto c=eval(n->ch[0],env);return c.IsTrue()?eval(n->ch[1],env):eval(n->ch[2],env);}
         case Node::eLAM:{auto cl=std::make_shared<Closure>();cl->params=n->params;cl->body=n->ch[0];cl->env=env;return Value::Fn(cl);}
+        case Node::eCTXEXPR:{
+            auto ctx=eval(n->ch[0],env);
+            auto ctxEnv=std::make_shared<Env>(env);
+            ctxEnv->set("__ctx",ctx);
+            return eval(n->ch[1],ctxEnv);
+        }
         case Node::eDERIV:return evalDeriv(n,env);
         case Node::eLINK:return evalLink(n,env);
         default:die("Bad expr",n->ln);
@@ -548,8 +570,6 @@ struct Interp{
         switch(n->op){
         case tMINUS:if(v.ty!=Value::NUM)die("- requires number",n->ln);return Value::Num(-v.n);
         case tNOT:return Value::Bool(!v.IsTrue());
-        case tATAT:{std::string r="@@("+std::string(v.TyName())+": "+v.ToStr()+")";
-            std::cerr<<r<<"\n";return Value::Str(r);}
         default:die("Bad unary",n->ln);
         }
         return Value::Null();
@@ -580,6 +600,13 @@ struct Interp{
     }
 
     double numV(const Value&v,int l){if(v.ty!=Value::NUM)die("Expected number, got "+std::string(v.TyName()),l);return v.n;}
+    int intIndex(const Value&v,const char*msg,int l){
+        if(v.ty!=Value::NUM)die(msg,l);
+        double n=v.n;
+        if(std::floor(n)!=n)die(msg,l);
+        if(n<(double)std::numeric_limits<int>::min()||n>(double)std::numeric_limits<int>::max())die(msg,l);
+        return (int)n;
+    }
     bool cmpLt(const Value&a,const Value&b,int l){
         if(a.ty==Value::NUM&&b.ty==Value::NUM)return a.n<b.n;
         if(a.ty==Value::STR&&b.ty==Value::STR)return a.s<b.s;
@@ -598,12 +625,13 @@ struct Interp{
     }
     Value idxAcc(Value&b,Value&i,int l){
         if(b.ty==Value::LIST){
-            int idx=(int)i.n;
+            int idx=intIndex(i,"list index requires integer index",l);
             auto&list=b.list();
             if(idx<0||idx>=(int)list.size())die("Index out of range",l);
             return list[idx];
         }
         if(b.ty==Value::MAP){
+            if(i.ty!=Value::STR)die("map index requires string key",l);
             auto&mp=b.map();
             for(auto&[k,v]:mp){
                 if(k==i.s)return v;
@@ -611,19 +639,20 @@ struct Interp{
             return Value::Null();
         }
         if(b.ty==Value::STR){
-            int idx=(int)i.n;
+            int idx=intIndex(i,"string index requires integer index",l);
             if(idx<0||idx>=(int)b.s.size())die("Index out of range",l);
             return Value::Str(std::string(1,b.s[idx]));}
         die("Cannot index "+std::string(b.TyName()),l);return Value::Null();
     }
     Value safeIdxAcc(Value&b,Value&i,int l){
         if(b.ty==Value::LIST){
-            int idx=(int)i.n;
+            int idx=intIndex(i,"list index requires integer index",l);
             auto&list=b.list();
             if(idx<0||idx>=(int)list.size())return Value::Null();
             return list[idx];
         }
         if(b.ty==Value::MAP){
+            if(i.ty!=Value::STR)die("map index requires string key",l);
             auto&mp=b.map();
             for(auto&[k,v]:mp){
                 if(k==i.s)return v;
@@ -631,10 +660,10 @@ struct Interp{
             return Value::Null();
         }
         if(b.ty==Value::STR){
-            int idx=(int)i.n;
+            int idx=intIndex(i,"string index requires integer index",l);
             if(idx<0||idx>=(int)b.s.size())return Value::Null();
             return Value::Str(std::string(1,b.s[idx]));}
-        return Value::Null();
+        die("Cannot index "+std::string(b.TyName()),l);return Value::Null();
     }
 
     // ===== Call =====
@@ -689,19 +718,19 @@ struct Interp{
     // ===== List methods =====
     Value listM(Value&b,const std::string&m,std::vector<Value>&a,int l,std::shared_ptr<Env> env){
         auto&ls=b.list();
-        if(m=="push"){ls.push_back(a[0]);return Value::Null();}
+        if(m=="push"){if(a.size()<1)die("list.push requires 1 arg",l);ls.push_back(a[0]);return Value::Null();}
         if(m=="pop"){if(ls.empty())die("pop on empty list",l);auto v=ls.back();ls.pop_back();return v;}
-        if(m=="slice"){int s=(int)a[0].n,e=(int)a[1].n;
+        if(m=="slice"){if(a.size()<2)die("list.slice requires 2 args",l);int s=(int)a[0].n,e=(int)a[1].n;
             s=std::max(0,s);e=std::min(e,(int)ls.size());
             return Value::List(VVec(ls.begin()+s,ls.begin()+e));}
-        if(m=="map"){VVec r;for(auto&el:ls){std::vector<Value>ar{el};r.push_back(callFn(a[0],ar,l,env));}
+        if(m=="map"){if(a.size()<1)die("list.map requires 1 arg",l);VVec r;for(auto&el:ls){std::vector<Value>ar{el};r.push_back(callFn(a[0],ar,l,env));}
             return Value::List(std::move(r));}
-        if(m=="filter"){VVec r;for(auto&el:ls){std::vector<Value>ar{el};if(callFn(a[0],ar,l,env).IsTrue())r.push_back(el);}
+        if(m=="filter"){if(a.size()<1)die("list.filter requires 1 arg",l);VVec r;for(auto&el:ls){std::vector<Value>ar{el};if(callFn(a[0],ar,l,env).IsTrue())r.push_back(el);}
             return Value::List(std::move(r));}
-        if(m=="reduce"){Value acc=a[1];for(auto&el:ls){std::vector<Value>ar{acc,el};acc=callFn(a[0],ar,l,env);}return acc;}
-        if(m=="find"){for(auto&el:ls){std::vector<Value>ar{el};if(callFn(a[0],ar,l,env).IsTrue())return el;}return Value::Null();}
-        if(m=="contains"){for(auto&el:ls)if(el==a[0])return Value::Bool(true);return Value::Bool(false);}
-        if(m=="join"){std::string r;for(size_t i=0;i<ls.size();i++){if(i)r+=a[0].s;r+=ls[i].ToStr();}return Value::Str(r);}
+        if(m=="reduce"){if(a.size()<2)die("list.reduce requires 2 args",l);Value acc=a[1];for(auto&el:ls){std::vector<Value>ar{acc,el};acc=callFn(a[0],ar,l,env);}return acc;}
+        if(m=="find"){if(a.size()<1)die("list.find requires 1 arg",l);for(auto&el:ls){std::vector<Value>ar{el};if(callFn(a[0],ar,l,env).IsTrue())return el;}return Value::Null();}
+        if(m=="contains"){if(a.size()<1)die("list.contains requires 1 arg",l);for(auto&el:ls)if(el==a[0])return Value::Bool(true);return Value::Bool(false);}
+        if(m=="join"){if(a.size()<1||a[0].ty!=Value::STR)die("list.join requires string separator",l);std::string r;for(size_t i=0;i<ls.size();i++){if(i)r+=a[0].s;r+=ls[i].ToStr();}return Value::Str(r);}
         if(m=="reverse"){return Value::List(VVec(ls.rbegin(),ls.rend()));}
         die("Unknown list method: "+m,l);return Value::Null();
     }
@@ -709,17 +738,17 @@ struct Interp{
     // ===== String methods =====
     Value strM(Value&b,const std::string&m,std::vector<Value>&a,int l){
         auto&s=b.s;
-        if(m=="split"){std::vector<Value>r;auto&sep=a[0].s;size_t pos=0;
+        if(m=="split"){if(a.size()<1||a[0].ty!=Value::STR)die("string.split requires string separator",l);std::vector<Value>r;auto&sep=a[0].s;if(sep.empty())die("string.split: separator cannot be empty",l);size_t pos=0;
             while(true){auto f=s.find(sep,pos);if(f==std::string::npos){r.push_back(Value::Str(s.substr(pos)));break;}
                 r.push_back(Value::Str(s.substr(pos,f-pos)));pos=f+sep.size();}
             return Value::List(VVec(r.begin(),r.end()));}
         if(m=="trim"){size_t a0=s.find_first_not_of(" \t\n\r"),b0=s.find_last_not_of(" \t\n\r");
             return a0==std::string::npos?Value::Str(""):Value::Str(s.substr(a0,b0-a0+1));}
         if(m=="chars"){VVec r;for(char c:s)r.push_back(Value::Str(std::string(1,c)));return Value::List(std::move(r));}
-        if(m=="starts_with")return Value::Bool(s.size()>=a[0].s.size()&&s.compare(0,a[0].s.size(),a[0].s)==0);
-        if(m=="ends_with")return Value::Bool(s.size()>=a[0].s.size()&&s.compare(s.size()-a[0].s.size(),a[0].s.size(),a[0].s)==0);
-        if(m=="contains")return Value::Bool(s.find(a[0].s)!=std::string::npos);
-        if(m=="replace"){std::string r=s;auto&old_=a[0].s;auto&new_=a[1].s;size_t p=0;
+        if(m=="starts_with"){if(a.size()<1||a[0].ty!=Value::STR)die("string.starts_with requires string prefix",l);return Value::Bool(s.size()>=a[0].s.size()&&s.compare(0,a[0].s.size(),a[0].s)==0);}
+        if(m=="ends_with"){if(a.size()<1||a[0].ty!=Value::STR)die("string.ends_with requires string suffix",l);return Value::Bool(s.size()>=a[0].s.size()&&s.compare(s.size()-a[0].s.size(),a[0].s.size(),a[0].s)==0);}
+        if(m=="contains"){if(a.size()<1||a[0].ty!=Value::STR)die("string.contains requires string part",l);return Value::Bool(s.find(a[0].s)!=std::string::npos);}
+        if(m=="replace"){if(a.size()<2||a[0].ty!=Value::STR||a[1].ty!=Value::STR)die("string.replace requires 2 string args",l);std::string r=s;auto&old_=a[0].s;auto&new_=a[1].s;if(old_.empty())die("string.replace: old value cannot be empty",l);size_t p=0;
             while((p=r.find(old_,p))!=std::string::npos){r.replace(p,old_.size(),new_);p+=new_.size();}
             return Value::Str(r);}
         die("Unknown string method: "+m,l);return Value::Null();
@@ -730,8 +759,9 @@ struct Interp{
         auto&mp=b.map();
         if(m=="keys"){VVec r;for(auto&[k,v]:mp)r.push_back(Value::Str(k));return Value::List(std::move(r));}
         if(m=="values"){VVec r;for(auto&[k,v]:mp)r.push_back(v);return Value::List(std::move(r));}
-        if(m=="has"){for(auto&[k,v]:mp)if(k==a[0].s)return Value::Bool(true);return Value::Bool(false);}
+        if(m=="has"){if(a.size()<1||a[0].ty!=Value::STR)die("map.has requires string key",l);for(auto&[k,v]:mp)if(k==a[0].s)return Value::Bool(true);return Value::Bool(false);}
         if(m=="remove"){
+            if(a.size()<1||a[0].ty!=Value::STR)die("map.remove requires string key",l);
             for(auto it=mp.begin();it!=mp.end();++it){
                 if(it->first==a[0].s){
                     auto v=it->second;
@@ -757,6 +787,7 @@ struct Interp{
             }
         }
         if(m=="set"){
+            if(a.size()<1)die("ref.set requires 1 arg",l);
             switch(h.kind){
             case RefHandle::VAR:h.env->set(h.name,a[0]);break;
             case RefHandle::LREF:{if(h.idx<0||h.idx>=(int)h.list->size())die("Ref OOB",l);(*h.list)[h.idx]=a[0];break;}
@@ -778,10 +809,10 @@ struct Interp{
         if(m=="send"){if(a.empty()||a[0].ty!=Value::NET)die("send requires net-form",l);
             pnet::sendMsg(h.fd,a[0].net().data);return Value::Null();}
         if(m=="recv"){auto data=pnet::recvMsg(h.fd);size_t pos=0;return deser(data,pos);}
-        if(m=="send_raw"){if(a.empty()||a[0].ty!=Value::STR)die("send_raw requires string",l);
+        if(m=="send_raw"){if(a.empty()||a[0].ty!=Value::STR)die("tcp.send_raw requires string",l);
             pnet::sendAll(h.fd,a[0].s.c_str(),(int)a[0].s.size());return Value::Null();}
-        if(m=="recv_raw"){if(a.empty()||a[0].ty!=Value::NUM)die("recv_raw requires number",l);
-            int n=(int)a[0].n;std::string buf(n,0);pnet::recvAll(h.fd,&buf[0],n);return Value::Str(buf);}
+        if(m=="recv_raw"){if(a.empty()||a[0].ty!=Value::NUM)die("tcp.recv_raw requires number",l);
+            int n=(int)a[0].n;if(n<0)die("tcp.recv_raw requires non-negative size",l);std::string buf(n,0);pnet::recvAll(h.fd,&buf[0],n);return Value::Str(buf);}
         if(m=="peer_addr"){
             struct sockaddr_storage sa{};socklen_t sl=sizeof(sa);
             if(getpeername((int)h.fd,(struct sockaddr*)&sa,&sl)!=0)return Value::Null();
@@ -790,7 +821,7 @@ struct Interp{
             return Value::Str(std::string(host)+":"+port);
         }
         if(m=="set_timeout"){if(a.empty()||a[0].ty!=Value::NUM)die("set_timeout requires number",l);
-            int secs=(int)a[0].n;
+            int secs=(int)a[0].n;if(secs<0)die("tcp.set_timeout requires non-negative seconds",l);
 #ifdef _WIN32
             DWORD ms=secs*1000;
             setsockopt((SOCKET)h.fd,SOL_SOCKET,SO_RCVTIMEO,(char*)&ms,sizeof(ms));
@@ -963,10 +994,22 @@ struct Interp{
             h->env=env->findEnv(arg->s);
             if(!h->env)die("Undefined: "+arg->s,n->ln);
             h->name=arg->s;
+        }else if(arg->k==Node::eOUTER){
+            h->kind=RefHandle::VAR;
+            h->env=env->findOuterEnv(arg->s);
+            if(!h->env)die("Undefined outer binding: "+arg->s,n->ln);
+            h->name=arg->s;
         }else if(arg->k==Node::eIDX){
             auto base=eval(arg->ch[0],env);auto idx=eval(arg->ch[1],env);
-            if(base.ty==Value::LIST){h->kind=RefHandle::LREF;h->list=std::static_pointer_cast<VVec>(base.o);h->idx=(int)idx.n;}
-            else if(base.ty==Value::MAP){h->kind=RefHandle::MREF;h->map=std::static_pointer_cast<VMap>(base.o);h->key=idx.s;}
+            if(base.ty==Value::LIST){
+                h->kind=RefHandle::LREF;
+                h->list=std::static_pointer_cast<VVec>(base.o);
+                h->idx=intIndex(idx,"list ref requires integer index",n->ln);
+            }
+            else if(base.ty==Value::MAP){
+                if(idx.ty!=Value::STR)die("map ref requires string key",n->ln);
+                h->kind=RefHandle::MREF;h->map=std::static_pointer_cast<VMap>(base.o);h->key=idx.s;
+            }
             else die("Cannot ref into "+std::string(base.TyName()),n->ln);
         }else if(arg->k==Node::eMEM){
             auto base=eval(arg->ch[0],env);
@@ -1071,7 +1114,7 @@ struct Interp{
         auto name=eval(n->ch[0],env);
         if(name.ty!=Value::STR)die("shm name must be string",n->ln);
         size_t sz=4096;
-        if((int)n->ch.size()>1){auto sv=eval(n->ch[1],env);if(sv.ty==Value::NUM)sz=(size_t)sv.n;}
+        if((int)n->ch.size()>1){auto sv=eval(n->ch[1],env);if(sv.ty==Value::NUM){if(sv.n<0)die("shm size must be non-negative",n->ln);sz=(size_t)sv.n;}}
 #ifdef _WIN32
         std::string mn="Local\\sl_shm_"+name.s;
         HANDLE hm=CreateFileMappingA(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,(DWORD)sz,mn.c_str());
@@ -1109,6 +1152,22 @@ struct Interp{
         regFn("print",[](std::vector<Value>&a)->Value{
             for(int i=0;i<(int)a.size();i++){if(i)std::cout<<" ";std::cout<<a[i].ToStr();}
             std::cout<<"\n";std::cout.flush();return Value::Null();});
+        regFn("debug",[](std::vector<Value>&a)->Value{
+            for(int i=0;i<(int)a.size();i++){
+                if(i)std::cout<<" ";
+                std::cout<<"debug("<<a[i].TyName()<<": "<<a[i].ToStr()<<")";
+            }
+            std::cout<<"\n";std::cout.flush();
+            return a.empty()?Value::Null():a[0];
+        });
+        regFn("probe",[](std::vector<Value>&a)->Value{
+            for(int i=0;i<(int)a.size();i++){
+                if(i)std::cout<<" ";
+                std::cout<<"probe("<<a[i].TyName()<<": "<<a[i].ToStr()<<")";
+            }
+            std::cout<<"\n";std::cout.flush();
+            return a.empty()?Value::Null():a[0];
+        });
         regFn("input",[](std::vector<Value>&)->Value{
             std::string l;std::getline(std::cin,l);return Value::Str(l);});
         regFn("len",[](std::vector<Value>&a)->Value{
@@ -1206,6 +1265,7 @@ struct Interp{
             if(port<1||port>65535)die("Port out of range: "+std::to_string(port));
             int backlog=16;
             if(a.size()>1&&a[1].ty==Value::NUM)backlog=(int)a[1].n;
+            if(backlog<0)die("tcp_listen backlog must be non-negative");
 
 #ifdef _WIN32
             SOCKET sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
@@ -1247,3 +1307,4 @@ struct Interp{
 };
 
 } // namespace sl
+

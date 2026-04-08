@@ -19,19 +19,18 @@ n = null
 print(n?.foo)
 print(n?[0])
 
-# Flow operator ::
+# Pipe operator |>
 fn double(x) => x * 2
 fn inc(x) => x + 1
-print(5::double)
-print(5::double::inc)
+print(5 |> double)
+print(5 |> double |> inc)
 
-# Pipe operator |>
-result = [1, 2, 3, 4, 5] |> filter(x -> x > 2) |> map(x -> x * 10)
+result = [1, 2, 3, 4, 5] |> filter($ > 2) |> map($ * 10)
 print(result)
 
 # Probe
-@@42
-@@"hello"
+debug(42)
+debug("hello")
 
 # Derive
 data = [1, 2, 3]

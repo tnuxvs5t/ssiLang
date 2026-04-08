@@ -31,8 +31,8 @@ enum Tk:uint8_t{
     tLP,tRP,tLB,tRB,tLC,tRC,
     tDOT,tQDOT,tQBR,
     tCOMMA,tCOLON,
-    tARROW,tDCOL,tPIPE,tFAT,tDPIPE,
-    tATAT,tAMP,
+    tARROW,tPIPE,tFAT,tDPIPE,
+    tAT,tDOLLAR,tAMP,
     tNL,tEOF
 };
 struct Tok{Tk t;std::string v;int ln;};
@@ -42,11 +42,11 @@ struct Node;
 using NP=std::shared_ptr<Node>;
 struct Node{
     enum K{
-        eNUM,eSTR,eBOOL,eNUL,eID,eLIST,eMAP,
+        eNUM,eSTR,eBOOL,eNUL,eID,eOUTER,eCTX,ePH,eLIST,eMAP,
         eUN,eBIN,eMEM,eSMEM,eIDX,eSIDX,
-        eCALL,eSPLIT,eLAM,eDERIV,eLINK,
+        eCALL,eSPLIT,eLAM,eCTXEXPR,eDERIV,eLINK,
         sBIND,sASGN,sFN,sIF,sWHILE,sFOR,
-        sRET,sBRK,sCONT,sEXPR,sBLOCK
+        sRET,sBRK,sCONT,sEXPR,sBLOCK,sCTX
     }k;
     double num=0;
     std::string s;
@@ -152,9 +152,20 @@ struct Env:std::enable_shared_from_this<Env>{
         auto it=v.find(k);if(it!=v.end())return&it->second;
         return par?par->find(k):nullptr;
     }
+    Value*findOuter(const std::string&k){
+        return par?par->find(k):nullptr;
+    }
     std::shared_ptr<Env> findEnv(const std::string&k){
         if(v.count(k))return shared_from_this();
         return par?par->findEnv(k):nullptr;
+    }
+    std::shared_ptr<Env> findOuterEnv(const std::string&k){
+        return par?par->findEnv(k):nullptr;
+    }
+    Value*findCtx(){
+        auto it=v.find("__ctx");
+        if(it!=v.end())return &it->second;
+        return par?par->findCtx():nullptr;
     }
     void set(const std::string&k,Value val){v[k]=std::move(val);}
 };

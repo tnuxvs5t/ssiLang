@@ -37,13 +37,12 @@ struct Lexer{
             if(c=='<'&&pk()=='='){p+=2;add(tLE,"<=");continue;}
             if(c=='>'&&pk()=='='){p+=2;add(tGE,">=");continue;}
             if(c=='-'&&pk()=='>'){p+=2;add(tARROW,"->");continue;}
-            if(c==':'&&pk()==':'){p+=2;add(tDCOL,"::");continue;}
             if(c=='|'&&pk()=='>'){p+=2;add(tPIPE,"|>");continue;}
             if(c=='='&&pk()=='>'){p+=2;add(tFAT,"=>");continue;}
             if(c=='|'&&pk()=='|'){p+=2;add(tDPIPE,"||");continue;}
-            if(c=='@'&&pk()=='@'){p+=2;add(tATAT,"@@");continue;}
             if(c=='?'&&pk()=='.'){p+=2;add(tQDOT,"?.");continue;}
             if(c=='?'&&pk()=='['){p+=2;add(tQBR,"?[");continue;}
+            if(c=='$'){doPlaceholder();continue;}
             // single-char
             Tk t=tEOF;
             switch(c){
@@ -54,7 +53,7 @@ struct Lexer{
             case '[':t=tLB;break;case ']':t=tRB;break;
             case '{':t=tLC;break;case '}':t=tRC;break;
             case '.':t=tDOT;break;case ',':t=tCOMMA;break;
-            case ':':t=tCOLON;break;case '&':t=tAMP;break;
+            case ':':t=tCOLON;break;case '@':t=tAT;break;case '&':t=tAMP;break;
             default:die(std::string("Unexpected char '")+c+"'",ln);
             }
             p++;add(t,std::string(1,c));
@@ -92,6 +91,12 @@ struct Lexer{
         else if(w=="and")t=tAND;else if(w=="or")t=tOR;else if(w=="not")t=tNOT;
         else if(w=="true")t=tTRUE;else if(w=="false")t=tFALSE;else if(w=="null")t=tNULL;
         add(t,w);
+    }
+    void doPlaceholder(){
+        int s=p;
+        p++;
+        while(isdigit((unsigned char)ch()))p++;
+        add(tDOLLAR,src.substr(s,p-s));
     }
     void add(Tk t,std::string v){toks.push_back({t,std::move(v),ln});}
 };

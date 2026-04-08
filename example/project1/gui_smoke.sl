@@ -1,0 +1,15 @@
+gui32 = import("../../modules/gui32")
+store_mod = import("./core/store")
+main_window = import("./ui/main_window")
+render = import("./ui/render")
+
+app = gui32.connect(null)
+store = store_mod.create()
+ui = main_window.create(app)
+render.render_all(ui, store.snapshot())
+ui.window.set_bounds(50, 50, 980, 720)
+ui.window.show()
+ui.window.close()
+app.disconnect()
+
+print("=== PROJECT1 GUI SMOKE PASSED ===")

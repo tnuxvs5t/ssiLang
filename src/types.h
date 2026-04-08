@@ -84,11 +84,12 @@ struct TcpHandle{uintptr_t fd=~(uintptr_t)0;bool closed=false;};
 struct TcpServerHandle{uintptr_t fd=~(uintptr_t)0;bool closed=false;};
 struct PipeHandle{uintptr_t rh=0,wh=0;std::string name;bool closed=false,named=false;};
 struct ShmHandle{void*ptr=nullptr;size_t sz=4096;std::string name;uintptr_t hm=0;bool closed=false,owner=false;};
+struct ProcHandle{uintptr_t h=0;uint64_t pid=0;bool closed=false,waited=false;int exit_code=0;};
 struct NetForm{std::string data;};
 
 // ===== Value =====
 struct Value{
-    enum Ty:uint8_t{NUM,STR,BOOL,NUL,LIST,MAP,FN,REF,TCP,TCPS,PIPE,SHM,NET}ty=NUL;
+    enum Ty:uint8_t{NUM,STR,BOOL,NUL,LIST,MAP,FN,REF,TCP,TCPS,PIPE,SHM,PROC,NET}ty=NUL;
     double n=0;
     std::string s;
     std::shared_ptr<void> o;
@@ -105,6 +106,7 @@ struct Value{
     static Value MkTcpS(std::shared_ptr<TcpServerHandle> h){Value r;r.ty=TCPS;r.o=std::move(h);return r;}
     static Value MkPipe(std::shared_ptr<PipeHandle> h){Value r;r.ty=PIPE;r.o=std::move(h);return r;}
     static Value MkShm(std::shared_ptr<ShmHandle> h){Value r;r.ty=SHM;r.o=std::move(h);return r;}
+    static Value MkProc(std::shared_ptr<ProcHandle> h){Value r;r.ty=PROC;r.o=std::move(h);return r;}
     static Value MkNet(std::shared_ptr<NetForm> f){Value r;r.ty=NET;r.o=std::move(f);return r;}
 
     VVec& list(){return*std::static_pointer_cast<VVec>(o);}
@@ -117,6 +119,7 @@ struct Value{
     TcpServerHandle& tcps(){return*std::static_pointer_cast<TcpServerHandle>(o);}
     PipeHandle& pipe(){return*std::static_pointer_cast<PipeHandle>(o);}
     ShmHandle& shm(){return*std::static_pointer_cast<ShmHandle>(o);}
+    ProcHandle& proc(){return*std::static_pointer_cast<ProcHandle>(o);}
     NetForm& net(){return*std::static_pointer_cast<NetForm>(o);}
 
     bool IsTrue()const{
@@ -127,7 +130,7 @@ struct Value{
     }
     const char*TyName()const{
         static const char*nm[]={"number","string","bool","null","list","map",
-            "function","link-ref","link-tcp","link-tcp-server","link-pipe","link-shm","net-form"};
+            "function","link-ref","link-tcp","link-tcp-server","link-pipe","link-shm","link-proc","net-form"};
         return nm[ty];
     }
     std::string ToStr()const;
@@ -194,7 +197,7 @@ inline std::string Value::ToStr()const{
     }
     case FN:return"<fn>";case REF:return"<link-ref>";case TCP:return"<link-tcp>";
     case TCPS:return"<link-tcp-server>";
-    case PIPE:return"<link-pipe>";case SHM:return"<link-shm>";
+    case PIPE:return"<link-pipe>";case SHM:return"<link-shm>";case PROC:return"<link-proc>";
     case NET:return"<net-form>";
     }
     return"?";

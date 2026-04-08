@@ -4,9 +4,13 @@
 #include <fstream>
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
+#include <cctype>
 #include <cstring>
 #include <cerrno>
 #include <limits>
+#include <thread>
+#include <chrono>
 #include <unordered_set>
 
 #ifdef _WIN32
@@ -25,6 +29,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <netdb.h>
+#include <sys/wait.h>
+#include <signal.h>
 #endif
 
 namespace sl {
@@ -425,6 +431,40 @@ struct Interp{
         env->set("__dir",Value::Str(env->dir));
     }
 
+    Value mkNative(std::function<Value(std::vector<Value>&,std::shared_ptr<Env>,int)> fn){
+        auto cl=std::make_shared<Closure>();
+        cl->native=std::move(fn);
+        return Value::Fn(cl);
+    }
+
+    Value* mapFind(Value& v,const std::string& key){
+        if(v.ty!=Value::MAP)return nullptr;
+        for(auto&[k,val]:v.map())if(k==key)return &val;
+        return nullptr;
+    }
+
+    const Value* mapFind(const Value& v,const std::string& key)const{
+        if(v.ty!=Value::MAP)return nullptr;
+        for(auto&[k,val]:v.map())if(k==key)return &val;
+        return nullptr;
+    }
+
+    std::string needStrArg(const Value& v,const char* msg,int l){
+        if(v.ty!=Value::STR)die(msg,l);
+        return v.s;
+    }
+
+    std::vector<std::string> needStrListArg(const Value& v,const char* msg,int l){
+        if(v.ty!=Value::LIST)die(msg,l);
+        std::vector<std::string> out;
+        for(auto&item:v.list()){
+            if(item.ty!=Value::STR)die(msg,l);
+            out.push_back(item.s);
+        }
+        if(out.empty())die(msg,l);
+        return out;
+    }
+
     Value exportEnv(const std::shared_ptr<Env>&env){
         VMap out;
         for(auto&[k,v]:env->v){
@@ -706,6 +746,7 @@ struct Interp{
         case Value::TCPS:return tcpSM(base,m,a,l);
         case Value::PIPE:return pipeM(base,m,a,l);
         case Value::SHM:return shmM(base,m,a,l);
+        case Value::PROC:return procM(base,m,a,l);
         default:break;
         }
         // fallback: map member that is a function
@@ -954,6 +995,108 @@ struct Interp{
         die("Unknown shm method: "+m,l);return Value::Null();
     }
 
+    Value procM(Value&b,const std::string&m,std::vector<Value>&a,int l){
+        auto&h=b.proc();
+        auto finishProc=[&](int code)->Value{
+            h.waited=true;
+            h.exit_code=code;
+#ifdef _WIN32
+            if(!h.closed&&h.h){CloseHandle((HANDLE)h.h);}
+#else
+            (void)h;
+#endif
+            h.closed=true;
+            h.h=0;
+            return Value::Num((double)code);
+        };
+        if(m=="pid")return Value::Num((double)h.pid);
+        if(m=="is_alive"){
+            if(h.waited)return Value::Bool(false);
+#ifdef _WIN32
+            if(h.closed||!h.h)return Value::Bool(false);
+            DWORD rc=WaitForSingleObject((HANDLE)h.h,0);
+            if(rc==WAIT_TIMEOUT)return Value::Bool(true);
+            if(rc==WAIT_OBJECT_0){
+                DWORD code=0;
+                GetExitCodeProcess((HANDLE)h.h,&code);
+                h.waited=true;h.exit_code=(int)code;CloseHandle((HANDLE)h.h);h.h=0;h.closed=true;
+                return Value::Bool(false);
+            }
+            die("process.is_alive failed"+pnet::sysErr(),l);
+#else
+            if(h.closed)return Value::Bool(false);
+            int status=0;
+            pid_t rc=waitpid((pid_t)h.pid,&status,WNOHANG);
+            if(rc==0)return Value::Bool(true);
+            if(rc<0){
+                if(errno==ECHILD){h.waited=true;h.closed=true;return Value::Bool(false);}
+                die("process.is_alive failed"+pnet::sysErr(),l);
+            }
+            int code=WIFEXITED(status)?WEXITSTATUS(status):(WIFSIGNALED(status)?128+WTERMSIG(status):-1);
+            h.waited=true;h.exit_code=code;h.closed=true;
+            return Value::Bool(false);
+#endif
+        }
+        if(m=="wait"){
+            if(h.waited)return Value::Num((double)h.exit_code);
+            int timeout_ms=-1;
+            if(!a.empty()){
+                if(a[0].ty!=Value::NUM)die("process.wait requires number timeout seconds",l);
+                if(a[0].n<0)die("process.wait requires non-negative timeout seconds",l);
+                timeout_ms=(int)(a[0].n*1000.0);
+            }
+#ifdef _WIN32
+            if(h.closed||!h.h)return Value::Num((double)h.exit_code);
+            DWORD rc=WaitForSingleObject((HANDLE)h.h,timeout_ms<0?INFINITE:(DWORD)timeout_ms);
+            if(rc==WAIT_TIMEOUT)return Value::Null();
+            if(rc!=WAIT_OBJECT_0)die("process.wait failed"+pnet::sysErr(),l);
+            DWORD code=0;
+            if(!GetExitCodeProcess((HANDLE)h.h,&code))die("process.wait failed"+pnet::sysErr(),l);
+            return finishProc((int)code);
+#else
+            if(h.closed)return Value::Num((double)h.exit_code);
+            if(timeout_ms<0){
+                int status=0;
+                pid_t rc=waitpid((pid_t)h.pid,&status,0);
+                if(rc<0)die("process.wait failed"+pnet::sysErr(),l);
+                int code=WIFEXITED(status)?WEXITSTATUS(status):(WIFSIGNALED(status)?128+WTERMSIG(status):-1);
+                return finishProc(code);
+            }
+            auto deadline=std::chrono::steady_clock::now()+std::chrono::milliseconds(timeout_ms);
+            for(;;){
+                int status=0;
+                pid_t rc=waitpid((pid_t)h.pid,&status,WNOHANG);
+                if(rc<0)die("process.wait failed"+pnet::sysErr(),l);
+                if(rc>0){
+                    int code=WIFEXITED(status)?WEXITSTATUS(status):(WIFSIGNALED(status)?128+WTERMSIG(status):-1);
+                    return finishProc(code);
+                }
+                if(std::chrono::steady_clock::now()>=deadline)return Value::Null();
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+#endif
+        }
+        if(m=="terminate"||m=="kill"){
+            if(h.waited)return Value::Null();
+#ifdef _WIN32
+            if(h.closed||!h.h)return Value::Null();
+            if(!TerminateProcess((HANDLE)h.h,1))die("process.kill failed"+pnet::sysErr(),l);
+            DWORD code=0;
+            WaitForSingleObject((HANDLE)h.h,INFINITE);
+            GetExitCodeProcess((HANDLE)h.h,&code);
+            return finishProc((int)code);
+#else
+            if(h.closed)return Value::Null();
+            if(::kill((pid_t)h.pid,SIGTERM)!=0)die("process.kill failed"+pnet::sysErr(),l);
+            int status=0;
+            if(waitpid((pid_t)h.pid,&status,0)<0)die("process.kill failed"+pnet::sysErr(),l);
+            int code=WIFEXITED(status)?WEXITSTATUS(status):(WIFSIGNALED(status)?128+WTERMSIG(status):-1);
+            return finishProc(code);
+#endif
+        }
+        die("Unknown process method: "+m,l);return Value::Null();
+    }
+
     // ===== Derive =====
     Value deepCopy(const Value&v){
         switch(v.ty){
@@ -1148,6 +1291,191 @@ struct Interp{
         regFn(name,[fn](std::vector<Value>&a,std::shared_ptr<Env>,int)->Value{return fn(a);});
     }
 
+    std::string quoteCmdArg(const std::string&arg){
+        if(arg.empty())return "\"\"";
+        bool need=false;
+        for(char c:arg)if(std::isspace((unsigned char)c)||c=='"'){need=true;break;}
+        if(!need)return arg;
+        std::string out="\"";
+        int backslashes=0;
+        for(char c:arg){
+            if(c=='\\'){backslashes++;continue;}
+            if(c=='"'){
+                out.append(backslashes*2+1,'\\');
+                out.push_back('"');
+                backslashes=0;
+                continue;
+            }
+            if(backslashes){out.append(backslashes,'\\');backslashes=0;}
+            out.push_back(c);
+        }
+        if(backslashes)out.append(backslashes*2,'\\');
+        out.push_back('"');
+        return out;
+    }
+
+    std::shared_ptr<ProcHandle> spawnProc(const std::vector<std::string>&argv,const std::string&cwd,bool detached,int l){
+        if(argv.empty())die("sys.spawn requires non-empty argv",l);
+#ifdef _WIN32
+        std::string cmd;
+        for(size_t i=0;i<argv.size();i++){
+            if(i)cmd.push_back(' ');
+            cmd+=quoteCmdArg(argv[i]);
+        }
+        STARTUPINFOA si{};
+        si.cb=sizeof(si);
+        PROCESS_INFORMATION pi{};
+        DWORD flags=detached?DETACHED_PROCESS:0;
+        std::vector<char> buf(cmd.begin(),cmd.end());
+        buf.push_back('\0');
+        BOOL ok=CreateProcessA(
+            NULL,
+            buf.data(),
+            NULL,
+            NULL,
+            FALSE,
+            flags,
+            NULL,
+            cwd.empty()?NULL:cwd.c_str(),
+            &si,
+            &pi
+        );
+        if(!ok)die("sys.spawn failed"+pnet::sysErr(),l);
+        CloseHandle(pi.hThread);
+        return std::shared_ptr<ProcHandle>(
+            new ProcHandle{(uintptr_t)pi.hProcess,(uint64_t)pi.dwProcessId,false,false,0},
+            [](ProcHandle*p){
+                if(!p->closed&&p->h)CloseHandle((HANDLE)p->h);
+                delete p;
+            }
+        );
+#else
+        pid_t pid=fork();
+        if(pid<0)die("sys.spawn failed"+pnet::sysErr(),l);
+        if(pid==0){
+            if(!cwd.empty())chdir(cwd.c_str());
+            if(detached)setsid();
+            std::vector<char*> cargs;
+            for(auto&arg:argv)cargs.push_back(const_cast<char*>(arg.c_str()));
+            cargs.push_back(nullptr);
+            execvp(cargs[0],cargs.data());
+            _exit(127);
+        }
+        return std::shared_ptr<ProcHandle>(new ProcHandle{0,(uint64_t)pid,false,false,0},[](ProcHandle*p){delete p;});
+#endif
+    }
+
+    Value makeSysObj(){
+        VMap sys;
+        sys.push_back({"cwd",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(!a.empty())die("sys.cwd requires 0 args",l);
+            return Value::Str(fs::current_path().string());
+        })});
+        sys.push_back({"chdir",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<1||a[0].ty!=Value::STR)die("sys.chdir requires string path",l);
+            fs::current_path(fs::path(a[0].s));
+            return Value::Null();
+        })});
+        sys.push_back({"exists",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<1||a[0].ty!=Value::STR)die("sys.exists requires string path",l);
+            return Value::Bool(fs::exists(fs::path(a[0].s)));
+        })});
+        sys.push_back({"is_file",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<1||a[0].ty!=Value::STR)die("sys.is_file requires string path",l);
+            return Value::Bool(fs::is_regular_file(fs::path(a[0].s)));
+        })});
+        sys.push_back({"is_dir",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<1||a[0].ty!=Value::STR)die("sys.is_dir requires string path",l);
+            return Value::Bool(fs::is_directory(fs::path(a[0].s)));
+        })});
+        sys.push_back({"mkdir",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.empty()||a[0].ty!=Value::STR)die("sys.mkdir requires string path",l);
+            bool rec=false;
+            if(a.size()>1){
+                if(a[1].ty!=Value::BOOL)die("sys.mkdir recursive must be bool",l);
+                rec=a[1].n!=0;
+            }
+            if(rec)fs::create_directories(fs::path(a[0].s));
+            else fs::create_directory(fs::path(a[0].s));
+            return Value::Null();
+        })});
+        sys.push_back({"listdir",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            fs::path p=".";
+            if(!a.empty()){
+                if(a[0].ty!=Value::STR)die("sys.listdir requires string path",l);
+                p=fs::path(a[0].s);
+            }
+            std::vector<std::string> names;
+            for(auto&ent:fs::directory_iterator(p))names.push_back(ent.path().filename().string());
+            std::sort(names.begin(),names.end());
+            VVec out;for(auto&n:names)out.push_back(Value::Str(n));
+            return Value::List(std::move(out));
+        })});
+        sys.push_back({"read_text",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.empty()||a[0].ty!=Value::STR)die("sys.read_text requires string path",l);
+            std::ifstream f(fs::path(a[0].s),std::ios::binary);
+            if(!f)die("sys.read_text cannot open "+a[0].s,l);
+            return Value::Str(std::string((std::istreambuf_iterator<char>(f)),{}));
+        })});
+        sys.push_back({"write_text",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<2||a[0].ty!=Value::STR||a[1].ty!=Value::STR)die("sys.write_text requires (path,text)",l);
+            std::ofstream f(fs::path(a[0].s),std::ios::binary|std::ios::trunc);
+            if(!f)die("sys.write_text cannot open "+a[0].s,l);
+            f<<a[1].s;
+            if(!f)die("sys.write_text failed "+a[0].s,l);
+            return Value::Null();
+        })});
+        sys.push_back({"append_text",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<2||a[0].ty!=Value::STR||a[1].ty!=Value::STR)die("sys.append_text requires (path,text)",l);
+            std::ofstream f(fs::path(a[0].s),std::ios::binary|std::ios::app);
+            if(!f)die("sys.append_text cannot open "+a[0].s,l);
+            f<<a[1].s;
+            if(!f)die("sys.append_text failed "+a[0].s,l);
+            return Value::Null();
+        })});
+        sys.push_back({"remove",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.empty()||a[0].ty!=Value::STR)die("sys.remove requires string path",l);
+            bool rec=false;
+            if(a.size()>1){
+                if(a[1].ty!=Value::BOOL)die("sys.remove recursive must be bool",l);
+                rec=a[1].n!=0;
+            }
+            fs::path p(a[0].s);
+            if(rec)return Value::Num((double)fs::remove_all(p));
+            return Value::Bool(fs::remove(p));
+        })});
+        sys.push_back({"rename",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.size()<2||a[0].ty!=Value::STR||a[1].ty!=Value::STR)die("sys.rename requires (src,dst)",l);
+            fs::rename(fs::path(a[0].s),fs::path(a[1].s));
+            return Value::Null();
+        })});
+        sys.push_back({"sleep",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.empty()||a[0].ty!=Value::NUM)die("sys.sleep requires number seconds",l);
+            if(a[0].n<0)die("sys.sleep requires non-negative seconds",l);
+            std::this_thread::sleep_for(std::chrono::milliseconds((int)(a[0].n*1000.0)));
+            return Value::Null();
+        })});
+        sys.push_back({"spawn",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(a.empty())die("sys.spawn requires argv list",l);
+            auto argv=needStrListArg(a[0],"sys.spawn requires argv list of strings",l);
+            std::string cwd;
+            bool detached=false;
+            if(a.size()>1){
+                if(a[1].ty!=Value::MAP)die("sys.spawn opts must be map",l);
+                if(auto*v=mapFind(a[1],"cwd")){
+                    if(v->ty!=Value::STR)die("sys.spawn opts.cwd must be string",l);
+                    cwd=v->s;
+                }
+                if(auto*v=mapFind(a[1],"detached")){
+                    if(v->ty!=Value::BOOL)die("sys.spawn opts.detached must be bool",l);
+                    detached=v->n!=0;
+                }
+            }
+            return Value::MkProc(spawnProc(argv,cwd,detached,l));
+        })});
+        return Value::Map(std::move(sys));
+    }
+
     void initBuiltins(){
         regFn("print",[](std::vector<Value>&a)->Value{
             for(int i=0;i<(int)a.size();i++){if(i)std::cout<<" ";std::cout<<a[i].ToStr();}
@@ -1303,6 +1631,7 @@ struct Interp{
             size_t p=0;
             return json::parse(a[0].s,p);
         });
+        G->set("sys",makeSysObj());
     }
 };
 

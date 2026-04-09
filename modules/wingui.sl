@@ -75,6 +75,8 @@ fn close() => @session.destroy_window(@id)
 fn set_title(title) => @session.set_title(@id, title)
 fn client_rect() => @session.client_rect(@id)
 fn invalidate() => @session.invalidate(@id)
+fn set_timer(timer_id, interval_ms) => @session.set_timer(@id, timer_id, interval_ms)
+fn kill_timer(timer_id) => @session.kill_timer(@id, timer_id)
 
 return {
 id: id,
@@ -84,7 +86,9 @@ hide: hide,
 close: close,
 set_title: set_title,
 client_rect: client_rect,
-invalidate: invalidate
+invalidate: invalidate,
+set_timer: set_timer,
+kill_timer: kill_timer
 }
 }
 
@@ -225,6 +229,25 @@ window_id: _window_id(target)
 return null
 }
 
+fn set_timer(target, timer_id, interval_ms) {
+resp = request({
+cmd: "set_timer",
+window_id: _window_id(target),
+timer_id: timer_id,
+interval_ms: interval_ms
+})
+return _strip_ok(resp)
+}
+
+fn kill_timer(target, timer_id) {
+resp = request({
+cmd: "kill_timer",
+window_id: _window_id(target),
+timer_id: timer_id
+})
+return _strip_ok(resp)
+}
+
 fn client_rect(target) {
 resp = request({
 cmd: "client_rect",
@@ -275,6 +298,8 @@ api.set_title = set_title
 api.destroy_window = destroy_window
 api.present = present
 api.invalidate = invalidate
+api.set_timer = set_timer
+api.kill_timer = kill_timer
 api.client_rect = client_rect
 api.wait = wait
 api.is_alive = is_alive

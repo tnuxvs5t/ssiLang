@@ -2,7 +2,7 @@ print("--- WINGUI TESTS ---")
 
 W = import("../modules/wingui.sl")
 
-helper = W.build_helper()
+helper = W.build_helper(true)
 print(sys.exists(helper))
 
 gui = W.start()
@@ -52,6 +52,18 @@ scene = [
 win.present(scene)
 evt = gui.poll_event(0.05)
 print(evt == null or type(evt) == "map")
+
+win.set_timer(7, 20)
+timer_ok = false
+for i in range(8) {
+    evt2 = gui.poll_event(0.05)
+    if evt2 != null and evt2.type == "timer" and evt2.timer_id == 7 {
+        timer_ok = true
+        break
+    }
+}
+print(timer_ok)
+win.kill_timer(7)
 
 win.close()
 code = gui.stop()

@@ -447,6 +447,13 @@ public:
             enqueue_event(std::move(event));
             return 0;
         }
+        case WM_TIMER:
+            enqueue_event(Value::map({
+                {"type", Value::string("timer")},
+                {"window_id", Value::number(window.id)},
+                {"timer_id", Value::number(static_cast<double>(static_cast<std::uint64_t>(wparam)))}
+            }));
+            return 0;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
             enqueue_event(Value::map({
@@ -653,6 +660,28 @@ private:
         return make_ok();
     }
 
+    Value set_timer_ui(const Value& request) {
+        WindowState& window = require_window(get_int(request, "window_id", -1));
+        const UINT_PTR timer_id = static_cast<UINT_PTR>(std::max(1, get_int(request, "timer_id", 1)));
+        const UINT interval_ms = static_cast<UINT>(std::max(1, get_int(request, "interval_ms", 16)));
+        if (SetTimer(window.hwnd, timer_id, interval_ms, nullptr) == 0) {
+            throw Error("SetTimer failed");
+        }
+        return make_ok({
+            {"timer_id", Value::number(static_cast<double>(timer_id))},
+            {"interval_ms", Value::number(interval_ms)}
+        });
+    }
+
+    Value kill_timer_ui(const Value& request) {
+        WindowState& window = require_window(get_int(request, "window_id", -1));
+        const UINT_PTR timer_id = static_cast<UINT_PTR>(std::max(1, get_int(request, "timer_id", 1)));
+        KillTimer(window.hwnd, timer_id);
+        return make_ok({
+            {"timer_id", Value::number(static_cast<double>(timer_id))}
+        });
+    }
+
     Value client_rect_ui(const Value& request) {
         WindowState& window = require_window(get_int(request, "window_id", -1));
         RECT rc{};
@@ -780,6 +809,14 @@ private:
 
         if (cmd == "invalidate") {
             return invoke_on_ui([this, request]() { return invalidate_ui(request); });
+        }
+
+        if (cmd == "set_timer") {
+            return invoke_on_ui([this, request]() { return set_timer_ui(request); });
+        }
+
+        if (cmd == "kill_timer") {
+            return invoke_on_ui([this, request]() { return kill_timer_ui(request); });
         }
 
         if (cmd == "client_rect") {

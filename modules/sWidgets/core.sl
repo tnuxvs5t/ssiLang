@@ -1,10 +1,65 @@
 W = import("../wingui.sl")
+SSTL = import("../sstl.sl")
+
+_widget_timer_seq = 4096
+
+fn _next_widget_timer_id() {
+@_widget_timer_seq = @_widget_timer_seq + 1
+return @_widget_timer_seq
+}
+
+_profile_buckets = {}
+_prefix_index_cache = {}
+
+fn _profile_begin() => sys.now_ms()
+
+fn _profile_end(name, started_ms) {
+elapsed = sys.now_ms() - started_ms
+bucket = @_profile_buckets?[name]
+if bucket == null {
+bucket = {calls: 0, total_ms: 0, max_ms: 0}
+}
+bucket.calls = bucket.calls + 1
+bucket.total_ms = bucket.total_ms + elapsed
+if elapsed > bucket.max_ms {
+bucket.max_ms = elapsed
+}
+@_profile_buckets[name] = bucket
+return elapsed
+}
+
+fn _profile_bucket(name) {
+bucket = @_profile_buckets?[name]
+if bucket == null {
+return {calls: 0, total_ms: 0, max_ms: 0, avg_ms: 0}
+}
+avg = bucket.calls == 0 => 0 || bucket.total_ms / bucket.calls
+out = %copy bucket
+out.avg_ms = avg
+return out
+}
+
+fn _profile_snapshot() {
+out = {}
+for key in @_profile_buckets.keys() {
+out[key] = _profile_bucket(key)
+}
+return out
+}
+
+fn _fmt_profile_bucket(name, bucket) {
+return name + ": calls=" + str(int(bucket.calls)) + ", avg=" + str(int(bucket.avg_ms * 1000 + 0.5) / 1000.0) + "ms, max=" + str(int(bucket.max_ms * 1000 + 0.5) / 1000.0) + "ms"
+}
 
 VK_BACK = 8
 VK_TAB = 9
 VK_RETURN = 13
 VK_ESCAPE = 27
 VK_SPACE = 32
+VK_A = 65
+VK_C = 67
+VK_V = 86
+VK_X = 88
 VK_END = 35
 VK_HOME = 36
 VK_LEFT = 37
@@ -113,6 +168,15 @@ fn _color_or(opts, key, fallback) => opts?[key] == null => fallback || opts[key]
 fn _num_or(opts, key, fallback) => opts?[key] == null => fallback || opts[key]
 fn _str_or(opts, key, fallback) => opts?[key] == null => fallback || opts[key]
 
+fn _font_cache_sig(font_cfg) {
+face = font_cfg.face == null => "" || font_cfg.face
+size = font_cfg.size == null => 0 || font_cfg.size
+weight = font_cfg.weight == null => 0 || font_cfg.weight
+italic = font_cfg.italic == true
+underline = font_cfg.underline == true
+return face + "|" + str(size) + "|" + str(weight) + "|" + str(italic) + "|" + str(underline)
+}
+
 fn _char_len(text) => len(text.chars())
 
 fn _slice_text(text, start, stop) {
@@ -203,24 +267,59 @@ return idx
 }
 
 fn _prefix_col(gui, font_cfg, text, x) {
+started_ms = _profile_begin()
 chars = text.chars()
-if x <= 0 => return 0
-prefix = ""
-i = 0
-while i < len(chars) {
-next_text = prefix + chars[i]
-next_w = gui.measure_text(next_text, {font: font_cfg}).width
-if x < next_w {
-prev_w = gui.measure_text(prefix, {font: font_cfg}).width
-left_gap = x - prev_w
-right_gap = next_w - x
-if left_gap <= right_gap => return i
-return i + 1
+if x <= 0 {
+_profile_end("_prefix_col", started_ms)
+return 0
 }
-prefix = next_text
+count = len(chars)
+if count == 0 {
+_profile_end("_prefix_col", started_ms)
+return 0
+}
+cache_key = _font_cache_sig(font_cfg) + "\n" + text
+pack = @_prefix_index_cache?[cache_key]
+if pack == null {
+build_started_ms = _profile_begin()
+prefix = ""
+widths = [0]
+i = 0
+while i < count {
+prefix = prefix + chars[i]
+widths.push(_measure_text(gui, prefix, font_cfg).width)
 i = i + 1
 }
-return len(chars)
+pack = {widths: widths}
+@_prefix_index_cache[cache_key] = pack
+_profile_end("_prefix_col.build", build_started_ms)
+}
+widths = pack.widths
+last_w = widths[count]
+if x >= last_w {
+_profile_end("_prefix_col", started_ms)
+return count
+}
+lo = 1
+hi = count
+while lo < hi {
+mid = int((lo + hi) / 2)
+if widths[mid] <= x {
+lo = mid + 1
+} else {
+hi = mid
+}
+}
+next_idx = lo
+prev_idx = next_idx - 1
+left_gap = x - widths[prev_idx]
+right_gap = widths[next_idx] - x
+if left_gap <= right_gap {
+_profile_end("_prefix_col", started_ms)
+return prev_idx
+}
+_profile_end("_prefix_col", started_ms)
+return next_idx
 }
 
 fn _repeat_text(piece, count) {
@@ -465,6 +564,7 @@ items: items
 }
 
 fn _syntax_tokenize_line(text) {
+started_ms = _profile_begin()
 chars = text.chars()
 tokens = []
 i = 0
@@ -524,12 +624,63 @@ kind = (_is_space(ch) or ch == "\n") => "text" || "operator"
 tokens.push({text: ch, kind: kind})
 i = i + 1
 }
+_profile_end("_syntax_tokenize_line", started_ms)
 return tokens
 }
 
 fn _is_control_input(evt) {
 if evt.text == "" => return true
 if evt.code != null and evt.code < 32 => return true
+return false
+}
+
+fn _clipboard_get(gui) {
+wrap = pcall(() -> gui.clipboard_get())
+if wrap.ok => return wrap.value
+return ""
+}
+
+fn _clipboard_set(gui, text) {
+pcall(() -> gui.clipboard_set(text == null => "" || text))
+return null
+}
+
+fn _single_line_paste_text(text) {
+clean = text == null => "" || text
+clean = clean.replace("\r", "")
+clean = clean.replace("\n", " ")
+return clean
+}
+
+fn _handle_text_shortcuts(evt, ctx, state, opts) {
+if evt.type != "key_down" or evt.ctrl != true => return false
+key = evt.key
+if key == VK_A {
+state.select_all()
+return true
+}
+if key == VK_C {
+_clipboard_set(ctx.gui, state.selected_text())
+return true
+}
+if key == VK_X {
+sel = state.selected_text()
+if sel != "" {
+_clipboard_set(ctx.gui, sel)
+state.insert("")
+}
+return true
+}
+if key == VK_V {
+clip = _clipboard_get(ctx.gui)
+if opts != null and opts.multiline != true {
+clip = _single_line_paste_text(clip)
+}
+if clip != "" {
+state.insert(clip)
+}
+return true
+}
 return false
 }
 
@@ -611,6 +762,18 @@ fn clear_selection() {
 return null
 }
 
+fn select_all() {
+if _char_len(@text) <= 0 {
+@caret = 0
+@anchor = null
+@preferred_col = null
+return null
+}
+begin_selection(0)
+select_to(_char_len(@text))
+return selection_range()
+}
+
 fn begin_selection(index) {
 @caret = _clamp(index, 0, _char_len(@text))
 @anchor = @caret
@@ -652,6 +815,12 @@ return @text
 fn caret_pos() {
 clamp_caret()
 return @caret
+}
+
+fn selected_text() {
+sel = selection_range()
+if sel == null => return ""
+return _slice_text(@text, sel.start, sel.end)
 }
 
 fn set_caret(index) {
@@ -776,9 +945,11 @@ set: set,
 caret: caret_pos,
 selection: selection_range,
 clear_selection: clear_selection,
+select_all: select_all,
 begin_selection: begin_selection,
 select_to: select_to,
 set_caret: set_caret,
+selected_text: selected_text,
 insert: insert,
 backspace: backspace,
 delete_forward: delete_forward,
@@ -1587,10 +1758,14 @@ focus_border: null,
 caret_color: null,
 selection_bg: null,
 placeholder: null,
-placeholder_color: null
+placeholder_color: null,
+mouse_move_timer_ms: 16
 }, opts)
 
 self = null
+mouse_move_timer_id = _next_widget_timer_id()
+mouse_move_timer_active = false
+pending_drag_move = null
 
 fn measure(ctx, avail_w) {
 font_cfg = _font_or(conf, ctx.theme.font)
@@ -1643,17 +1818,60 @@ pad = _normalize_padding(conf, conf.padding)
 font_cfg = _font_or(conf, ctx.theme.font)
 text_x = box_rect.x + pad.left
 
+fn stop_mouse_move_timer() {
+if mouse_move_timer_active != true => return null
+pcall(() -> ctx.window.native.kill_timer(mouse_move_timer_id))
+@mouse_move_timer_active = false
+return null
+}
+
+fn apply_drag_move(move_evt) {
+col = _prefix_col(ctx.gui, font_cfg, state.get(), move_evt.x - text_x)
+state.select_to(col)
+return true
+}
+
 if evt.type == "mouse_down" and evt.button == "left" {
+stop_mouse_move_timer()
+@pending_drag_move = null
 col = _prefix_col(ctx.gui, font_cfg, state.get(), evt.x - text_x)
 state.begin_selection(col)
 return true
 }
 if evt.type == "mouse_move" and ctx.is_active(self) {
-col = _prefix_col(ctx.gui, font_cfg, state.get(), evt.x - text_x)
-state.select_to(col)
+if conf.mouse_move_timer_ms <= 0 {
+return apply_drag_move(evt)
+}
+@pending_drag_move = {x: evt.x}
+if mouse_move_timer_active != true {
+ctx.window.native.set_timer(mouse_move_timer_id, conf.mouse_move_timer_ms)
+@mouse_move_timer_active = true
+}
 return true
 }
+if evt.type == "timer" and evt.timer_id == mouse_move_timer_id {
+stop_mouse_move_timer()
+if not ctx.is_active(self) or pending_drag_move == null {
+@pending_drag_move = null
+return false
+}
+move_evt = @pending_drag_move
+@pending_drag_move = null
+return apply_drag_move(move_evt)
+}
+if evt.type == "mouse_up" and evt.button == "left" {
+stop_mouse_move_timer()
+if ctx.is_active(self) and pending_drag_move != null {
+move_evt = @pending_drag_move
+@pending_drag_move = null
+return apply_drag_move(move_evt)
+}
+@pending_drag_move = null
+}
 if evt.type == "key_down" {
+if _handle_text_shortcuts(evt, ctx, state, {multiline: false}) {
+return true
+}
 if evt.key == VK_LEFT {
 state.move_left()
 return true
@@ -1713,10 +1931,14 @@ bg: null,
 border: null,
 focus_border: null,
 caret_color: null,
-selection_bg: null
+selection_bg: null,
+mouse_move_timer_ms: 16
 }, opts)
 
 self = null
+mouse_move_timer_id = _next_widget_timer_id()
+mouse_move_timer_active = false
+pending_drag_move = null
 
 fn line_height(ctx) {
 font_cfg = _font_or(conf, ctx.theme.mono_font)
@@ -1794,15 +2016,58 @@ col = _prefix_col(ctx.gui, font_cfg, lines[line], x - text_x)
 return _index_from_line_col(state.get(), line, col)
 }
 
+fn stop_mouse_move_timer() {
+if mouse_move_timer_active != true => return null
+pcall(() -> ctx.window.native.kill_timer(mouse_move_timer_id))
+@mouse_move_timer_active = false
+return null
+}
+
+fn apply_drag_move(move_evt) {
+state.select_to(point_index(move_evt.x, move_evt.y))
+return true
+}
+
 if evt.type == "mouse_down" and evt.button == "left" {
+stop_mouse_move_timer()
+@pending_drag_move = null
 state.begin_selection(point_index(evt.x, evt.y))
 return true
 }
 if evt.type == "mouse_move" and ctx.is_active(self) {
-state.select_to(point_index(evt.x, evt.y))
+if conf.mouse_move_timer_ms <= 0 {
+return apply_drag_move(evt)
+}
+@pending_drag_move = {x: evt.x, y: evt.y}
+if mouse_move_timer_active != true {
+ctx.window.native.set_timer(mouse_move_timer_id, conf.mouse_move_timer_ms)
+@mouse_move_timer_active = true
+}
 return true
 }
+if evt.type == "timer" and evt.timer_id == mouse_move_timer_id {
+stop_mouse_move_timer()
+if not ctx.is_active(self) or pending_drag_move == null {
+@pending_drag_move = null
+return false
+}
+move_evt = @pending_drag_move
+@pending_drag_move = null
+return apply_drag_move(move_evt)
+}
+if evt.type == "mouse_up" and evt.button == "left" {
+stop_mouse_move_timer()
+if ctx.is_active(self) and pending_drag_move != null {
+move_evt = @pending_drag_move
+@pending_drag_move = null
+return apply_drag_move(move_evt)
+}
+@pending_drag_move = null
+}
 if evt.type == "key_down" {
+if _handle_text_shortcuts(evt, ctx, state, {multiline: true}) {
+return true
+}
 if evt.key == VK_LEFT {
 state.move_left()
 return true
@@ -1883,7 +2148,8 @@ scrollbar_thumb_active: null,
 tab_text: "    ",
 popup_max_items: 8,
 gutter_min_width: 48,
-scrollbar_width: 12
+scrollbar_width: 12,
+mouse_move_timer_ms: 16
 }, opts)
 
 if state.refresh_completion == null or state.accept_completion == null {
@@ -1897,11 +2163,66 @@ follow_caret = true
 scroll_dragging = false
 scroll_drag_start_y = 0
 scroll_drag_start_line = 0
+mouse_move_timer_id = _next_widget_timer_id()
+mouse_move_timer_active = false
+pending_drag_move = null
+cached_text = null
+cached_lines = [""]
+line_render_cache = {}
+measure_cache = {}
 
 fn editor_font(ctx) => _font_or(conf, ctx.theme.mono_font)
 fn line_no_font(ctx) => conf.line_no_font == null => W.font("Consolas", 13) || conf.line_no_font
-fn line_height(ctx) => _measure_text(ctx.gui, "Mg", editor_font(ctx)).height
+fn line_height(ctx) => measure_cached(ctx, "Mg", editor_font(ctx)).height
 fn total_lines() => len(lines_now())
+
+fn font_sig(font_cfg) {
+face = font_cfg.face == null => "" || font_cfg.face
+size = font_cfg.size == null => 0 || font_cfg.size
+weight = font_cfg.weight == null => 0 || font_cfg.weight
+italic = font_cfg.italic == true
+underline = font_cfg.underline == true
+return face + "|" + str(size) + "|" + str(weight) + "|" + str(italic) + "|" + str(underline)
+}
+
+fn sync_text_cache() {
+text = state.get()
+if text != @cached_text {
+@cached_text = text
+@cached_lines = _line_texts(text)
+@line_render_cache = {}
+}
+return text
+}
+
+fn measure_cached(ctx, text, font_cfg) {
+key = font_sig(font_cfg) + "\n" + text
+cached = @measure_cache?[key]
+if cached != null => return cached
+metrics = ctx.gui.measure_text(text, {font: font_cfg})
+@measure_cache[key] = metrics
+return metrics
+}
+
+fn width_cached(ctx, text, font_cfg) => measure_cached(ctx, text, font_cfg).width
+
+fn line_render_info(ctx, line_text) {
+font_cfg = editor_font(ctx)
+key = font_sig(font_cfg) + "\n" + line_text
+cached = @line_render_cache?[key]
+if cached != null => return cached
+tokens = _syntax_tokenize_line(line_text)
+widths = []
+for token in tokens {
+widths.push(token.text == "" => 0 || width_cached(ctx, token.text, font_cfg))
+}
+entry = {
+tokens: tokens,
+widths: widths
+}
+@line_render_cache[key] = entry
+return entry
+}
 
 fn visible_capacity(ctx, box_rect) {
 pad = _normalize_padding(conf, conf.padding)
@@ -1913,7 +2234,10 @@ cap = 1
 return cap
 }
 
-fn lines_now() => _line_texts(state.get())
+fn lines_now() {
+sync_text_cache()
+return @cached_lines
+}
 
 fn max_scroll(ctx, box_rect) {
 max_v = total_lines() - visible_capacity(ctx, box_rect)
@@ -1976,7 +2300,7 @@ return @popup_offset
 fn gutter_width(ctx) {
 font_cfg = line_no_font(ctx)
 digits = str(len(lines_now()))
-width = _measure_text(ctx.gui, digits, font_cfg).width + 18
+width = width_cached(ctx, digits, font_cfg) + 18
 if width < conf.gutter_min_width {
 width = conf.gutter_min_width
 }
@@ -2040,7 +2364,7 @@ info = text_metrics(ctx, box_rect)
 lines = lines_now()
 lc = state.line_col()
 cur_line = lc.line < len(lines) => lines[lc.line] || ""
-x = info.text_x + ctx.gui.measure_text(_slice_text(cur_line, 0, lc.col), {font: editor_font(ctx)}).width
+x = info.text_x + width_cached(ctx, _slice_text(cur_line, 0, lc.col), editor_font(ctx))
 y = info.text_y + (lc.line - @scroll_line) * line_height(ctx)
 return {x: x, y: y}
 }
@@ -2058,8 +2382,8 @@ item_h = line_height(ctx) + 6
 width = 180
 for i in range(@popup_offset, @popup_offset + count) {
 item = items[i]
-text_w = ctx.gui.measure_text(item.label, {font: editor_font(ctx)}).width
-kind_w = ctx.gui.measure_text(item.kind, {font: line_no_font(ctx)}).width
+text_w = width_cached(ctx, item.label, editor_font(ctx))
+kind_w = width_cached(ctx, item.kind, line_no_font(ctx))
 candidate = text_w + kind_w + 30
 if candidate > width {
 width = candidate
@@ -2124,7 +2448,7 @@ lh = line_height(ctx)
 line = @scroll_line + int((y - info.text_y) / lh)
 line = _clamp(line, 0, len(lines) - 1)
 col = _prefix_col(ctx.gui, editor_font(ctx), lines[line], x - info.text_x)
-return _index_from_line_col(state.get(), line, col)
+return _index_from_line_col(sync_text_cache(), line, col)
 }
 
 fn syntax_color(ctx, kind) {
@@ -2174,6 +2498,32 @@ hide_completion()
 return true
 }
 
+fn stop_mouse_move_timer(ctx) {
+if mouse_move_timer_active != true => return null
+pcall(() -> ctx.window.native.kill_timer(mouse_move_timer_id))
+@mouse_move_timer_active = false
+return null
+}
+
+fn apply_drag_move(ctx, box_rect, move_evt) {
+if scroll_dragging {
+track = scrollbar_rect(ctx, box_rect)
+thumb = scrollbar_thumb_rect(ctx, box_rect)
+max_v = max_scroll(ctx, box_rect)
+if track != null and thumb != null and max_v > 0 and track.h > thumb.h {
+delta_y = move_evt.y - @scroll_drag_start_y
+usable = track.h - thumb.h
+delta_line = int(max_v * delta_y / usable)
+scroll_to(ctx, box_rect, @scroll_drag_start_line + delta_line)
+}
+return true
+}
+state.select_to(point_index(ctx, box_rect, move_evt.x, move_evt.y))
+@follow_caret = true
+hide_completion()
+return true
+}
+
 fn measure(ctx, avail_w) {
 lh = line_height(ctx)
 h = len(lines_now()) * lh + _normalize_padding(conf, conf.padding).top + _normalize_padding(conf, conf.padding).bottom
@@ -2184,6 +2534,7 @@ return {w: avail_w, h: h}
 }
 
 fn layout(ctx, box_rect) {
+started_ms = _profile_begin()
 font_cfg = editor_font(ctx)
 line_font = line_no_font(ctx)
 lh = line_height(ctx)
@@ -2195,6 +2546,7 @@ clamp_scroll(ctx, box_rect)
 }
 sync_popup_offset()
 lines = lines_now()
+text_now = sync_text_cache()
 sel = state.selection()
 focused = ctx.has_focus(self)
 border = focused => _color_or(conf, "focus_border", ctx.theme.input_focus_border) || _color_or(conf, "border", ctx.theme.input_border)
@@ -2220,15 +2572,15 @@ ops.push(W.fill_rect(info.text_x - 4, cur_y, box_rect.x + box_rect.w - pad.right
 }
 
 if sel != null {
-start_lc = _line_col_of(state.get(), sel.start)
-end_lc = _line_col_of(state.get(), sel.end)
+start_lc = _line_col_of(text_now, sel.start)
+end_lc = _line_col_of(text_now, sel.end)
 for line in range(start_line, stop_line) {
 if line < start_lc.line or line > end_lc.line => continue
 line_text = lines[line]
 line_start = line == start_lc.line => start_lc.col || 0
 line_end = line == end_lc.line => end_lc.col || _char_len(line_text)
-sel_x1 = info.text_x + ctx.gui.measure_text(_slice_text(line_text, 0, line_start), {font: font_cfg}).width
-sel_x2 = info.text_x + ctx.gui.measure_text(_slice_text(line_text, 0, line_end), {font: font_cfg}).width
+sel_x1 = info.text_x + width_cached(ctx, _slice_text(line_text, 0, line_start), font_cfg)
+sel_x2 = info.text_x + width_cached(ctx, _slice_text(line_text, 0, line_end), font_cfg)
 ops.push(W.fill_rect(sel_x1, info.text_y + (line - start_line) * lh, sel_x2 - sel_x1, lh, _color_or(conf, "selection_bg", ctx.theme.selection_bg)))
 }
 }
@@ -2237,27 +2589,30 @@ for line in range(start_line, stop_line) {
 y = info.text_y + (line - start_line) * lh
 line_text = lines[line]
 line_label = str(line + 1)
-line_w = ctx.gui.measure_text(line_label, {font: line_font}).width
+line_w = width_cached(ctx, line_label, line_font)
 ops.push(W.text(box_rect.x + pad.left + info.gutter - line_w - 8, y, line_label, {
 color: _color_or(conf, "gutter_text", ctx.theme.gutter_text),
 font: line_font
 }))
 
 sx = info.text_x
-tokens = _syntax_tokenize_line(line_text)
-for token in tokens {
+render_info = line_render_info(ctx, line_text)
+tokens = render_info.tokens
+token_widths = render_info.widths
+for ti in range(len(tokens)) {
+token = tokens[ti]
 if token.text == "" => continue
 ops.push(W.text(sx, y, token.text, {
 color: syntax_color(ctx, token.kind),
 font: font_cfg
 }))
-sx = sx + ctx.gui.measure_text(token.text, {font: font_cfg}).width
+sx = sx + token_widths[ti]
 }
 }
 
 if focused and lc.line >= start_line and lc.line < stop_line {
 cur_line = lc.line < len(lines) => lines[lc.line] || ""
-caret_x = info.text_x + ctx.gui.measure_text(_slice_text(cur_line, 0, lc.col), {font: font_cfg}).width
+caret_x = info.text_x + width_cached(ctx, _slice_text(cur_line, 0, lc.col), font_cfg)
 caret_y = info.text_y + (lc.line - start_line) * lh
 ops.push(W.fill_rect(caret_x, caret_y, 1, lh, _color_or(conf, "caret_color", ctx.theme.caret)))
 }
@@ -2285,7 +2640,7 @@ ops.push(W.text(rect.x + 8, y + 2, item.label, {
 color: syntax_color(ctx, item.kind == "kw" => "keyword" || item.kind == "builtin" => "builtin" || item.kind == "member" => "operator" || "text"),
 font: font_cfg
 }))
-kind_w = ctx.gui.measure_text(item.kind, {font: line_font}).width
+kind_w = width_cached(ctx, item.kind, line_font)
 ops.push(W.text(rect.x + rect.w - kind_w - 8, y + 3, item.kind, {
 color: ctx.theme.muted_text,
 font: line_font
@@ -2293,11 +2648,23 @@ font: line_font
 }
 }
 
+_profile_end("ide_editor.layout", started_ms)
 return ops
 }
 
 fn on_event_local(evt, ctx) {
 box_rect = self.bounds()
+
+if evt.type == "timer" and evt.timer_id == mouse_move_timer_id {
+stop_mouse_move_timer(ctx)
+if not ctx.is_active(self) or pending_drag_move == null {
+@pending_drag_move = null
+return false
+}
+move_evt = @pending_drag_move
+@pending_drag_move = null
+return apply_drag_move(ctx, box_rect, move_evt)
+}
 
 if evt.type == "mouse_wheel" {
 scroll_by(ctx, box_rect, -int(evt.delta / 120) * 3)
@@ -2305,6 +2672,8 @@ return true
 }
 
 if evt.type == "mouse_down" and evt.button == "left" {
+stop_mouse_move_timer(ctx)
+@pending_drag_move = null
 popup_idx = popup_hit_index(ctx, box_rect, evt.x, evt.y)
 if popup_idx != null {
 state.set_completion_index(popup_idx)
@@ -2331,30 +2700,42 @@ return true
 }
 
 if evt.type == "mouse_move" and ctx.is_active(self) {
-if scroll_dragging {
-track = scrollbar_rect(ctx, box_rect)
-thumb = scrollbar_thumb_rect(ctx, box_rect)
-max_v = max_scroll(ctx, box_rect)
-if track != null and thumb != null and max_v > 0 and track.h > thumb.h {
-delta_y = evt.y - @scroll_drag_start_y
-usable = track.h - thumb.h
-delta_line = int(max_v * delta_y / usable)
-scroll_to(ctx, box_rect, @scroll_drag_start_line + delta_line)
+if conf.mouse_move_timer_ms <= 0 {
+return apply_drag_move(ctx, box_rect, evt)
+}
+@pending_drag_move = {x: evt.x, y: evt.y}
+if mouse_move_timer_active != true {
+ctx.window.native.set_timer(mouse_move_timer_id, conf.mouse_move_timer_ms)
+@mouse_move_timer_active = true
 }
 return true
 }
-state.select_to(point_index(ctx, box_rect, evt.x, evt.y))
+
+if evt.type == "mouse_up" and evt.button == "left" {
+stop_mouse_move_timer(ctx)
+did_move = false
+if ctx.is_active(self) and pending_drag_move != null {
+move_evt = @pending_drag_move
+@pending_drag_move = null
+did_move = apply_drag_move(ctx, box_rect, move_evt)
+} else {
+@pending_drag_move = null
+}
+if scroll_dragging {
+@scroll_dragging = false
+return true
+}
+if did_move == true {
+return true
+}
+}
+
+if evt.type == "key_down" {
+if _handle_text_shortcuts(evt, ctx, state, {multiline: true}) {
 @follow_caret = true
 hide_completion()
 return true
 }
-
-if evt.type == "mouse_up" and evt.button == "left" and scroll_dragging {
-@scroll_dragging = false
-return true
-}
-
-if evt.type == "key_down" {
 if evt.ctrl == true and evt.key == VK_SPACE {
 @follow_caret = true
 refresh_completion(true)
@@ -2479,9 +2860,117 @@ windows = {}
 running = false
 style = default_theme()
 conf = _copy_map(opts, "sWidgets.app opts")
-default_redraw_interval_ms = conf.redraw_interval_ms == null => 16 || conf.redraw_interval_ms
+
+fn normalize_redraw_interval_ms(value) {
+ms = value == null => 16 || value
+if ms > 0 and ms < 16 {
+return 16
+}
+return ms
+}
+
+default_redraw_interval_ms = normalize_redraw_interval_ms(conf.redraw_interval_ms)
 default_redraw_timer_id = conf.redraw_timer_id == null => 1 || conf.redraw_timer_id
 default_defer_redraw = conf.defer_redraw == null => true || conf.defer_redraw
+script_event_queue = SSTL.queue()
+script_prefetch_limit = conf.script_prefetch_limit == null => 64 || conf.script_prefetch_limit
+script_pulled_total = 0
+script_dispatched_total = 0
+script_queue_high_watermark = 0
+script_last_event_type = null
+timer_handlers = {}
+
+fn note_script_queue() {
+size_now = script_event_queue.size()
+if size_now > @script_queue_high_watermark {
+@script_queue_high_watermark = size_now
+}
+return size_now
+}
+
+fn queue_script_event(evt) {
+@script_event_queue.push(evt)
+@script_pulled_total = @script_pulled_total + 1
+note_script_queue()
+return null
+}
+
+fn pump_script_events(limit) {
+want = limit == null => @script_prefetch_limit || limit
+if want <= 0 => return 0
+added = 0
+while added < want {
+evt = @gui.poll_event(0)
+if evt == null => break
+queue_script_event(evt)
+added = added + 1
+}
+return added
+}
+
+fn pop_script_event(timeout_seconds) {
+if @script_event_queue.empty() {
+evt = @gui.poll_event(timeout_seconds)
+if evt == null => return null
+queue_script_event(evt)
+}
+if @script_prefetch_limit > 1 {
+pump_script_events(@script_prefetch_limit - 1)
+}
+return @script_event_queue.pop()
+}
+
+fn stats() {
+gui_stats = pcall(() -> @gui.stats())
+wingui_queue_len = null
+wingui_fps = null
+wingui_profile = {}
+if gui_stats.ok {
+wingui_queue_len = gui_stats.value.queue_len
+wingui_fps = gui_stats.value.fps
+    wingui_profile = gui_stats.value.profile == null => {} || gui_stats.value.profile
+}
+return {
+wingui_queue_len: wingui_queue_len,
+wingui_fps: wingui_fps,
+wingui_profile: wingui_profile,
+script_queue_len: script_event_queue.size(),
+script_queue_high_watermark: @script_queue_high_watermark,
+script_pulled_total: @script_pulled_total,
+script_dispatched_total: @script_dispatched_total,
+script_last_event_type: @script_last_event_type,
+sw_profile: _profile_snapshot()
+}
+}
+
+fn set_timer_handler(timer_id, handler) {
+@timer_handlers[str(timer_id)] = handler
+return null
+}
+
+fn clear_timer_handler(timer_id) {
+@timer_handlers.remove(str(timer_id))
+return null
+}
+
+fn profile_report() {
+st = stats()
+lines = []
+lines.push("[profile] WQ=" + str(st.wingui_queue_len == null => -1 || int(st.wingui_queue_len)) + " SQ=" + str(int(st.script_queue_len)) + "/" + str(int(st.script_queue_high_watermark)) + " WFPS=" + str(st.wingui_fps == null => -1 || int(st.wingui_fps + 0.5)))
+for name in ["render_scene", "measure_text", "poll_event"] {
+bucket = st.wingui_profile?[name]
+if bucket != null {
+lines.push("[wingui] " + _fmt_profile_bucket(name, bucket))
+}
+}
+for name in ["redraw_window", "dispatch", "dispatch.mouse_move", "_prefix_col", "_prefix_col.build", "_syntax_tokenize_line", "ide_editor.layout"] {
+bucket = st.sw_profile?[name]
+if bucket != null {
+lines.push("[sWidgets] " + _fmt_profile_bucket(name, bucket))
+}
+}
+return lines.join("\n")
+}
 
 fn render_ctx(win) {
 fn is_hot(widget) => widget != null and widget == win.hot
@@ -2539,6 +3028,7 @@ request_focus: request_focus
 }
 
 fn redraw_window(win) {
+started_ms = _profile_begin()
 if win.closed => return null
 client = win.native.client_rect()
 box_rect = _rect(0, 0, client.width, client.height)
@@ -2546,6 +3036,7 @@ ops = [W.clear(win.background)]
 _append_all(ops, win.root.layout(render_ctx(win), box_rect))
 win.dirty = false
 win.native.present(ops)
+_profile_end("redraw_window", started_ms)
 return ops
 }
 
@@ -2595,14 +3086,17 @@ return false
 }
 
 fn dispatch(win, evt) {
+started_ms = _profile_begin()
 if win == null or win.closed => return null
 
 if evt.type == "resize" {
 request_redraw(win, false)
+_profile_end("dispatch", started_ms)
 return evt
 }
 
 if evt.type == "paint" {
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2612,6 +3106,16 @@ stop_redraw_timer(win)
 if win.dirty == true {
 redraw_window(win)
 }
+_profile_end("dispatch", started_ms)
+return evt
+}
+handler = @timer_handlers?[str(evt.timer_id)]
+if handler != null {
+used = handler(evt, event_ctx(win))
+if used == true {
+request_redraw(win, false)
+}
+_profile_end("dispatch", started_ms)
 return evt
 }
 target = win.focus == null => win.root || win.focus
@@ -2619,6 +3123,7 @@ used = bubble(win, target, evt)
 if used == true {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2628,10 +3133,12 @@ win.hot = null
 if changed {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
 if evt.type == "mouse_move" {
+move_started_ms = _profile_begin()
 next_hot = win.root.hit(evt.x, evt.y)
 changed = next_hot != win.hot
 win.hot = next_hot
@@ -2640,6 +3147,8 @@ used = bubble(win, target, evt)
 if changed or used == true {
 request_redraw(win, false)
 }
+_profile_end("dispatch.mouse_move", move_started_ms)
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2649,6 +3158,7 @@ used = bubble(win, target, evt)
 if used == true {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2665,6 +3175,7 @@ focus_changed = old_focus != win.focus
 if hot_changed or active_changed or focus_changed {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2679,6 +3190,7 @@ win.active = null
 if hot_changed or active_changed {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2687,14 +3199,17 @@ used = bubble(win, win.focus, evt)
 if used == true {
 request_redraw(win, false)
 }
+_profile_end("dispatch", started_ms)
 return evt
 }
 
 if evt.type == "close" {
 close_window(win)
+_profile_end("dispatch", started_ms)
 return evt
 }
 
+_profile_end("dispatch", started_ms)
 return evt
 }
 
@@ -2722,7 +3237,7 @@ focus: null,
 closed: false,
 dirty: false,
 redraw_timer_active: false,
-redraw_interval_ms: conf.redraw_interval_ms == null => default_redraw_interval_ms || conf.redraw_interval_ms,
+redraw_interval_ms: conf.redraw_interval_ms == null => default_redraw_interval_ms || normalize_redraw_interval_ms(conf.redraw_interval_ms),
 redraw_timer_id: conf.redraw_timer_id == null => default_redraw_timer_id || conf.redraw_timer_id,
 defer_redraw: conf.defer_redraw == null => default_defer_redraw || conf.defer_redraw,
 theme: conf.theme == null => @style || conf.theme,
@@ -2752,8 +3267,10 @@ return win
 }
 
 fn step(timeout_seconds) {
-evt = @gui.poll_event(timeout_seconds)
+evt = pop_script_event(timeout_seconds)
 if evt == null => return null
+@script_dispatched_total = @script_dispatched_total + 1
+@script_last_event_type = evt.type
 win = @windows?[str(evt.window_id)]
 if win != null {
 dispatch(win, evt)
@@ -2787,6 +3304,10 @@ app_obj = {
 gui: gui,
 theme: style,
 create_window: create_window,
+stats: stats,
+profile_report: profile_report,
+set_timer_handler: set_timer_handler,
+clear_timer_handler: clear_timer_handler,
 step: step,
 run: run,
 stop: stop

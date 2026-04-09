@@ -1449,6 +1449,13 @@ struct Interp{
             fs::rename(fs::path(a[0].s),fs::path(a[1].s));
             return Value::Null();
         })});
+        sys.push_back({"now_ms",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
+            if(!a.empty())die("sys.now_ms requires 0 args",l);
+            static const auto base=std::chrono::steady_clock::now();
+            const auto now=std::chrono::steady_clock::now();
+            const auto elapsed=std::chrono::duration_cast<std::chrono::microseconds>(now-base).count();
+            return Value::Num((double)elapsed/1000.0);
+        })});
         sys.push_back({"sleep",mkNative([this](std::vector<Value>&a,std::shared_ptr<Env>,int l)->Value{
             if(a.empty()||a[0].ty!=Value::NUM)die("sys.sleep requires number seconds",l);
             if(a[0].n<0)die("sys.sleep requires non-negative seconds",l);

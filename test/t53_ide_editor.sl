@@ -3,6 +3,18 @@ print("--- IDE EDITOR TESTS ---")
 S = import("../modules/sWidgets/core.sl")
 
 app = S.app({})
+clipboard_text = ""
+
+fn clipboard_get_stub() => @clipboard_text
+
+fn clipboard_set_stub(text) {
+@clipboard_text = text
+return null
+}
+
+app.gui.clipboard_get = clipboard_get_stub
+app.gui.clipboard_set = clipboard_set_stub
+
 state = S.ide_editor_state("pri", {})
 editor = S.ide_editor(state, {})
 
@@ -36,6 +48,17 @@ state.set("if true {")
 state.set_caret(len(state.get()))
 win.dispatch({type: "key_down", key: 13})
 print(state.get() == "if true {\n    ")
+
+state.set("hello\nworld")
+state.set_caret(2)
+win.dispatch({type: "key_down", key: 65, ctrl: true})
+sel = state.selection()
+print(sel.start == 0 and sel.end == len(state.get()))
+win.dispatch({type: "key_down", key: 67, ctrl: true})
+print(clipboard_text == "hello\nworld")
+clipboard_text = "paste"
+win.dispatch({type: "key_down", key: 86, ctrl: true})
+print(state.get() == "paste")
 
 scroll_lines = []
 for i in range(24) {

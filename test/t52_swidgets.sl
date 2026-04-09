@@ -5,6 +5,7 @@ S = import("../modules/sWidgets/core.sl")
 parent_hits = 0
 button_hits = 0
 line_submits = 0
+clipboard_text = ""
 
 fn parent_event(evt, ctx) {
 if evt.type == "mouse_down" {
@@ -61,6 +62,16 @@ visible: false,
 root: root
 })
 
+fn clipboard_get_stub() => @clipboard_text
+
+fn clipboard_set_stub(text) {
+@clipboard_text = text
+return null
+}
+
+app.gui.clipboard_get = clipboard_get_stub
+app.gui.clipboard_set = clipboard_set_stub
+
 button_widget = root.children()[0].children()[2]
 button_box = button_widget.bounds()
 
@@ -106,6 +117,29 @@ sel_state.select_to(3)
 sel_state.insert("X")
 print(sel_state.get() == "aXd")
 
+shortcut_state = S.line_edit_state("alpha beta", {})
+shortcut_widget = S.line_edit(shortcut_state, {})
+shortcut_win = app.create_window({
+title: "line shortcuts",
+width: 320,
+height: 90,
+visible: false,
+root: shortcut_widget
+})
+shortcut_box = shortcut_widget.bounds()
+shortcut_win.dispatch({type: "mouse_down", button: "left", x: shortcut_box.x + 8, y: shortcut_box.y + 8})
+shortcut_win.dispatch({type: "key_down", key: 65, ctrl: true})
+shortcut_sel = shortcut_state.selection()
+print(shortcut_sel.start == 0 and shortcut_sel.end == len(shortcut_state.get()))
+shortcut_win.dispatch({type: "key_down", key: 67, ctrl: true})
+print(clipboard_text == "alpha beta")
+shortcut_win.dispatch({type: "key_down", key: 88, ctrl: true})
+print(shortcut_state.get() == "")
+print(clipboard_text == "alpha beta")
+clipboard_text = "x\r\ny"
+shortcut_win.dispatch({type: "key_down", key: 86, ctrl: true})
+print(shortcut_state.get() == "x y")
+
 editor_widget = root.children()[0].children()[4]
 editor_box = editor_widget.bounds()
 win.dispatch({type: "mouse_down", button: "left", x: editor_box.x + 8, y: editor_box.y + 8})
@@ -119,6 +153,14 @@ win.dispatch({type: "key_down", key: 38})
 win.dispatch({type: "key_down", key: 36})
 win.dispatch({type: "char", text: ">"})
 print(edit_state.get() == ">hi\n!")
+edit_state.set("left\nright")
+edit_state.begin_selection(0)
+edit_state.select_to(4)
+win.dispatch({type: "key_down", key: 67, ctrl: true})
+print(clipboard_text == "left")
+clipboard_text = "A\nB"
+win.dispatch({type: "key_down", key: 86, ctrl: true})
+print(edit_state.get() == "A\nB\nright")
 
 flex_fill = S.editor(S.editor_state("body", {}), {})
 flex_fill.flex = 1
@@ -258,6 +300,7 @@ print(wheel_app.stop() == 0)
 drag_win.close()
 flex_win.close()
 backspace_win.close()
+shortcut_win.close()
 win.close()
 print(app.stop() == 0)
 

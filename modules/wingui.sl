@@ -178,6 +178,24 @@ timeout_ms: int(secs * 1000)
 return resp.event
 }
 
+fn stats() {
+resp = request({cmd: "stats"})
+return _strip_ok(resp)
+}
+
+fn clipboard_get() {
+resp = request({cmd: "clipboard_get"})
+return resp.text == null => "" || resp.text
+}
+
+fn clipboard_set(text) {
+resp = request({
+cmd: "clipboard_set",
+text: text == null => "" || text
+})
+return _strip_ok(resp)
+}
+
 fn create_window(opts2) {
 req = _copy_map(opts2, "wingui.create_window opts")
 req.cmd = "create_window"
@@ -292,6 +310,9 @@ api.screen_size = screen_size
 api.work_area = work_area
 api.measure_text = measure_text
 api.poll_event = poll_event
+api.stats = stats
+api.clipboard_get = clipboard_get
+api.clipboard_set = clipboard_set
 api.create_window = create_window
 api.show_window = show_window
 api.set_title = set_title

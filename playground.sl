@@ -1,8 +1,18 @@
-# ssiLang playground
-name = "ssiLang"
+# Demo: interactive runner
+print("Enter your favorite number:")
+raw = input()
+n = int(raw)
+print("double = " + str(n * 2))
 
-fn greet(user) => "hello, " + user
+nums = [1, 2, 3, 4, 5]
+picked = nums |> filter($ % 2 == 1) |> map($ * 10)
+print(picked)
+print("double = " + str(n * 2))
 
-print(greet(name))
+nums = [1, 2, 3, 4, 5]
+picked = nums |> filter($ % 2 == 1) |> map($ * 10)
+print(picked)print("double = " + str(n * 2))
 
-sys.
+nums = [1, 2, 3, 4, 5]
+picked = nums |> filter($ % 2 == 1) |> map($ * 10)
+print(picked)

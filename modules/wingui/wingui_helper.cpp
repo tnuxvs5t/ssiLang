@@ -13,6 +13,8 @@
 #include <chrono>
 #include <condition_variable>
 #include <cstdint>
+#include <cstring>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -34,6 +36,8 @@ namespace {
 
 constexpr UINT WM_APP_RUN_TASK = WM_APP + 1;
 constexpr wchar_t kWindowClassName[] = L"ssiLangWinguiWindow";
+constexpr UINT_PTR kInternalRenderTimerId = 0x7ffffffeu;
+constexpr UINT kInternalRenderTimerIntervalMs = 1;
 
 struct UiTask {
     std::function<Value()> run;
@@ -44,6 +48,12 @@ struct UiTask {
     bool done = false;
 };
 
+struct ProfileBucket {
+    double total_ms = 0.0;
+    double max_ms = 0.0;
+    std::uint64_t calls = 0;
+};
+
 class HelperState;
 
 struct WindowState {
@@ -52,6 +62,8 @@ struct WindowState {
     HWND hwnd = nullptr;
     Value scene = Value::list();
     bool tracking_mouse = false;
+    bool render_dirty = false;
+    bool render_timer_armed = false;
 };
 
 Value make_ok(std::initializer_list<MapEntry> entries = {}) {
@@ -314,6 +326,30 @@ void render_scene(WindowState& window, HDC target) {
     DeleteDC(mem);
 }
 
+void arm_render_timer(WindowState& window) {
+    if (window.render_timer_armed || window.hwnd == nullptr || !IsWindow(window.hwnd)) {
+        return;
+    }
+    if (SetTimer(window.hwnd, kInternalRenderTimerId, kInternalRenderTimerIntervalMs, nullptr) == 0) {
+        throw Error("SetTimer failed for internal render timer");
+    }
+    window.render_timer_armed = true;
+}
+
+void request_render(WindowState& window) {
+    window.render_dirty = true;
+    arm_render_timer(window);
+}
+
+void disarm_render_timer(WindowState& window) {
+    if (!window.render_timer_armed || window.hwnd == nullptr || !IsWindow(window.hwnd)) {
+        window.render_timer_armed = false;
+        return;
+    }
+    KillTimer(window.hwnd, kInternalRenderTimerId);
+    window.render_timer_armed = false;
+}
+
 class HelperState {
 public:
     explicit HelperState(TcpSocket channel)
@@ -385,6 +421,8 @@ public:
                 {"height", Value::number(HIWORD(lparam))}
             }));
             return 0;
+        case WM_ERASEBKGND:
+            return 1;
         case WM_PAINT: {
             RECT client{};
             GetClientRect(window.hwnd, &client);
@@ -395,9 +433,9 @@ public:
                 {"height", Value::number(client.bottom - client.top)}
             }));
             PAINTSTRUCT ps{};
-            HDC dc = BeginPaint(window.hwnd, &ps);
-            render_scene(window, dc);
+            BeginPaint(window.hwnd, &ps);
             EndPaint(window.hwnd, &ps);
+            request_render(window);
             return 0;
         }
         case WM_MOUSEMOVE: {
@@ -448,6 +486,24 @@ public:
             return 0;
         }
         case WM_TIMER:
+            if (static_cast<UINT_PTR>(wparam) == kInternalRenderTimerId) {
+                disarm_render_timer(window);
+                if (!window.render_dirty || window.hwnd == nullptr || !IsWindow(window.hwnd) || !IsWindowVisible(window.hwnd)) {
+                    return 0;
+                }
+                HDC dc = GetDC(window.hwnd);
+                if (dc != nullptr) {
+                    const auto started = std::chrono::steady_clock::now();
+                    render_scene(window, dc);
+                    ReleaseDC(window.hwnd, dc);
+                    window.render_dirty = false;
+                    note_present();
+                    note_profile("render_scene", started);
+                } else {
+                    arm_render_timer(window);
+                }
+                return 0;
+            }
             enqueue_event(Value::map({
                 {"type", Value::string("timer")},
                 {"window_id", Value::number(window.id)},
@@ -636,6 +692,7 @@ private:
         }
 
         HWND hwnd = it->second->hwnd;
+        disarm_render_timer(*it->second);
         if (IsWindow(hwnd)) {
             DestroyWindow(hwnd);
         }
@@ -650,19 +707,105 @@ private:
             throw Error("present requires ops list");
         }
         window.scene = *ops;
-        InvalidateRect(window.hwnd, nullptr, FALSE);
+        request_render(window);
+        return make_ok();
+    }
+
+    Value stats_direct() {
+        Value out = make_ok();
+        {
+            std::lock_guard<std::mutex> lock(event_mutex_);
+            map_put(out, "queue_len", Value::number(static_cast<double>(events_.size())));
+        }
+        map_put(out, "fps", Value::number(current_fps()));
+        Value profile = Value::map();
+        {
+            std::lock_guard<std::mutex> lock(stats_mutex_);
+            for (const auto& entry : profile_buckets_) {
+                const ProfileBucket& bucket = entry.second;
+                Value bucket_value = Value::map();
+                map_put(bucket_value, "calls", Value::number(static_cast<double>(bucket.calls)));
+                map_put(bucket_value, "total_ms", Value::number(bucket.total_ms));
+                map_put(bucket_value, "max_ms", Value::number(bucket.max_ms));
+                map_put(bucket_value, "avg_ms", Value::number(bucket.calls == 0 ? 0.0 : bucket.total_ms / static_cast<double>(bucket.calls)));
+                map_put(profile, entry.first, std::move(bucket_value));
+            }
+        }
+        map_put(out, "profile", std::move(profile));
+        return out;
+    }
+
+    Value clipboard_get_ui() {
+        if (!OpenClipboard(nullptr)) {
+            throw Error("OpenClipboard failed");
+        }
+
+        std::string text;
+        HANDLE handle = GetClipboardData(CF_UNICODETEXT);
+        if (handle != nullptr) {
+            LPCWSTR raw = static_cast<LPCWSTR>(GlobalLock(handle));
+            if (raw != nullptr) {
+                text = narrow(std::wstring(raw));
+                GlobalUnlock(handle);
+            }
+        }
+
+        CloseClipboard();
+        return make_ok({
+            {"text", Value::string(text)}
+        });
+    }
+
+    Value clipboard_set_ui(const Value& request) {
+        const std::wstring text = widen(get_string(request, "text", ""));
+        if (!OpenClipboard(nullptr)) {
+            throw Error("OpenClipboard failed");
+        }
+
+        if (!EmptyClipboard()) {
+            CloseClipboard();
+            throw Error("EmptyClipboard failed");
+        }
+
+        const std::size_t bytes = (text.size() + 1) * sizeof(wchar_t);
+        HGLOBAL handle = GlobalAlloc(GMEM_MOVEABLE, bytes);
+        if (handle == nullptr) {
+            CloseClipboard();
+            throw Error("GlobalAlloc failed");
+        }
+
+        void* raw = GlobalLock(handle);
+        if (raw == nullptr) {
+            GlobalFree(handle);
+            CloseClipboard();
+            throw Error("GlobalLock failed");
+        }
+
+        std::memcpy(raw, text.c_str(), bytes);
+        GlobalUnlock(handle);
+
+        if (SetClipboardData(CF_UNICODETEXT, handle) == nullptr) {
+            GlobalFree(handle);
+            CloseClipboard();
+            throw Error("SetClipboardData failed");
+        }
+
+        CloseClipboard();
         return make_ok();
     }
 
     Value invalidate_ui(const Value& request) {
         WindowState& window = require_window(get_int(request, "window_id", -1));
-        InvalidateRect(window.hwnd, nullptr, FALSE);
+        request_render(window);
         return make_ok();
     }
 
     Value set_timer_ui(const Value& request) {
         WindowState& window = require_window(get_int(request, "window_id", -1));
         const UINT_PTR timer_id = static_cast<UINT_PTR>(std::max(1, get_int(request, "timer_id", 1)));
+        if (timer_id == kInternalRenderTimerId) {
+            throw Error("timer_id is reserved by wingui internal renderer");
+        }
         const UINT interval_ms = static_cast<UINT>(std::max(1, get_int(request, "interval_ms", 16)));
         if (SetTimer(window.hwnd, timer_id, interval_ms, nullptr) == 0) {
             throw Error("SetTimer failed");
@@ -676,6 +819,9 @@ private:
     Value kill_timer_ui(const Value& request) {
         WindowState& window = require_window(get_int(request, "window_id", -1));
         const UINT_PTR timer_id = static_cast<UINT_PTR>(std::max(1, get_int(request, "timer_id", 1)));
+        if (timer_id == kInternalRenderTimerId) {
+            throw Error("timer_id is reserved by wingui internal renderer");
+        }
         KillTimer(window.hwnd, timer_id);
         return make_ok({
             {"timer_id", Value::number(static_cast<double>(timer_id))}
@@ -708,6 +854,7 @@ private:
     }
 
     Value measure_text_direct(const Value& request) {
+        const auto started = std::chrono::steady_clock::now();
         const std::wstring text = widen(get_string(request, "text", ""));
         HDC dc = GetDC(nullptr);
         HFONT font = create_font_from_value(request);
@@ -722,6 +869,8 @@ private:
         DeleteObject(font);
         ReleaseDC(nullptr, dc);
 
+        note_profile("measure_text", started);
+
         return make_ok({
             {"width", Value::number(size.cx)},
             {"height", Value::number(size.cy)},
@@ -732,18 +881,21 @@ private:
     }
 
     Value poll_event_direct(const Value& request) {
+        const auto started = std::chrono::steady_clock::now();
         const int timeout_ms = std::max(0, get_int(request, "timeout_ms", 0));
         std::unique_lock<std::mutex> lock(event_mutex_);
         if (events_.empty() && timeout_ms > 0) {
             event_cv_.wait_for(lock, std::chrono::milliseconds(timeout_ms), [this]() { return !events_.empty() || stopping_.load(); });
         }
         if (events_.empty()) {
+            note_profile("poll_event", started);
             return make_ok({
                 {"event", Value::null()}
             });
         }
         Value event = std::move(events_.front());
         events_.pop();
+        note_profile("poll_event", started);
         return make_ok({
             {"event", std::move(event)}
         });
@@ -785,6 +937,18 @@ private:
 
         if (cmd == "poll_event") {
             return poll_event_direct(request);
+        }
+
+        if (cmd == "stats") {
+            return stats_direct();
+        }
+
+        if (cmd == "clipboard_get") {
+            return invoke_on_ui([this]() { return clipboard_get_ui(); });
+        }
+
+        if (cmd == "clipboard_set") {
+            return invoke_on_ui([this, request]() { return clipboard_set_ui(request); });
         }
 
         if (cmd == "create_window") {
@@ -858,6 +1022,37 @@ private:
         }
     }
 
+    void note_present() {
+        const auto now = std::chrono::steady_clock::now();
+        std::lock_guard<std::mutex> lock(stats_mutex_);
+        frame_times_.push_back(now);
+        const auto cutoff = now - std::chrono::seconds(1);
+        while (!frame_times_.empty() && frame_times_.front() < cutoff) {
+            frame_times_.pop_front();
+        }
+    }
+
+    void note_profile(const std::string& name, std::chrono::steady_clock::time_point started) {
+        const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - started).count();
+        std::lock_guard<std::mutex> lock(stats_mutex_);
+        ProfileBucket& bucket = profile_buckets_[name];
+        bucket.calls += 1;
+        bucket.total_ms += static_cast<double>(elapsed) / 1000.0;
+        bucket.max_ms = std::max(bucket.max_ms, static_cast<double>(elapsed) / 1000.0);
+    }
+
+    double current_fps() {
+        std::lock_guard<std::mutex> lock(stats_mutex_);
+        if (frame_times_.size() <= 1) {
+            return frame_times_.empty() ? 0.0 : 1.0;
+        }
+        const auto span = std::chrono::duration_cast<std::chrono::milliseconds>(frame_times_.back() - frame_times_.front()).count();
+        if (span <= 0) {
+            return static_cast<double>(frame_times_.size());
+        }
+        return static_cast<double>(frame_times_.size() - 1) * 1000.0 / static_cast<double>(span);
+    }
+
     TcpSocket channel_;
     DWORD ui_thread_id_ = 0;
     std::atomic<bool> stopping_{false};
@@ -865,6 +1060,9 @@ private:
     std::mutex event_mutex_;
     std::condition_variable event_cv_;
     std::queue<Value> events_;
+    std::mutex stats_mutex_;
+    std::deque<std::chrono::steady_clock::time_point> frame_times_;
+    std::unordered_map<std::string, ProfileBucket> profile_buckets_;
     int next_window_id_ = 1;
     std::unordered_map<int, std::unique_ptr<WindowState>> windows_;
 };
